@@ -22,6 +22,10 @@ public class ExamPaperEditRequestVM {
     @NotNull
     private Integer suggestTime;
 
+    private Integer questionCount;
+
+    private Integer setMethod;
+
     private List<String> limitDateTime;
 
     @Size(min = 1,message = "请添加试卷标题")
@@ -100,5 +104,21 @@ public class ExamPaperEditRequestVM {
 
     public void setScore(String score) {
         this.score = score;
+    }
+
+    public Integer getSetMethod() {
+        return setMethod;
+    }
+
+    public void setSetMethod(Integer setMethod) {
+        this.setMethod = setMethod;
+    }
+
+    public Integer getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(Integer questionCount) {
+        this.questionCount = questionCount;
     }
 }

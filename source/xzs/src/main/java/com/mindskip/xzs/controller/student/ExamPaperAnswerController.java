@@ -67,7 +67,7 @@ public class ExamPaperAnswerController extends BaseApiController {
         User user = getCurrentUser();
         ExamPaperAnswerInfo examPaperAnswerInfo = examPaperAnswerService.calculateExamPaperAnswer(examPaperSubmitVM, user);
         if (null == examPaperAnswerInfo) {
-            return RestResponse.fail(2, "试卷不能重复做");
+            return RestResponse.fail(2, "固定试卷不能重复做");
         }
         ExamPaperAnswer examPaperAnswer = examPaperAnswerInfo.getExamPaperAnswer();
         Integer userScore = examPaperAnswer.getUserScore();

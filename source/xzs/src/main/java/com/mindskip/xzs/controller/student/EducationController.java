@@ -37,6 +37,12 @@ public class EducationController extends BaseApiController {
         return RestResponse.ok(subjectVMS);
     }
 
+    @RequestMapping(value = "/subject/all-list", method = RequestMethod.POST)
+    public RestResponse<List<Subject>> allList() {
+        List<Subject> subjects = subjectService.list();
+        return RestResponse.ok(subjects);
+    }
+
     @RequestMapping(value = "/subject/select/{id}", method = RequestMethod.POST)
     public RestResponse<SubjectEditRequestVM> select(@PathVariable Integer id) {
         Subject subject = subjectService.selectById(id);

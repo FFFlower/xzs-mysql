@@ -20,6 +20,8 @@ public class QuestionEditRequestVM {
 
     private Integer gradeLevel;
 
+    private Integer currentIdStart;
+
     @Valid
     private List<QuestionEditItemVM> items;
     @NotBlank
@@ -35,6 +37,8 @@ public class QuestionEditRequestVM {
     private Integer difficult;
 
     private Integer itemOrder;
+
+    private String questionTypeName;
 
     public Integer getId() {
         return id;
@@ -130,5 +134,21 @@ public class QuestionEditRequestVM {
 
     public void setItemOrder(Integer itemOrder) {
         this.itemOrder = itemOrder;
+    }
+
+    public Integer getCurrentIdStart() {
+        return currentIdStart;
+    }
+
+    public void setCurrentIdStart(Integer currentIdStart) {
+        this.currentIdStart = currentIdStart;
+    }
+
+    public String getQuestionTypeName() {
+        return questionTypeName;
+    }
+
+    public void setQuestionTypeName(String questionTypeName) {
+        this.questionTypeName = questionTypeName;
     }
 }

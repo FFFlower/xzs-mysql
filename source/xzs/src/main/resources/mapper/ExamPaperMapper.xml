@@ -17,17 +17,33 @@
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="deleted" jdbcType="BIT" property="deleted" />
     <result column="task_exam_id" jdbcType="INTEGER" property="taskExamId" />
+    <result column="set_method" jdbcType="INTEGER" property="setMethod" />
   </resultMap>
   <sql id="Base_Column_List">
     id, name, subject_id, paper_type, grade_level, score, question_count, suggest_time,
     limit_start_time, limit_end_time, frame_text_content_id, create_user, create_time,
-    deleted, task_exam_id
+    deleted, task_exam_id, set_method
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />
     from t_exam_paper
     where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_exam_paper
+    where id in
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from t_exam_paper
@@ -95,6 +111,9 @@
       <if test="taskExamId != null">
         task_exam_id,
       </if>
+      <if test="setMethod != null">
+        set_method,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -141,6 +160,9 @@
       </if>
       <if test="taskExamId != null">
         #{taskExamId,jdbcType=INTEGER},
+      </if>
+      <if test="setMethod != null">
+        #{setMethod,jdbcType=INTEGER},
       </if>
     </trim>
   </insert>
@@ -189,6 +211,9 @@
       <if test="taskExamId != null">
         task_exam_id = #{taskExamId,jdbcType=INTEGER},
       </if>
+      <if test="setMethod != null">
+        set_method = #{setMethod,jdbcType=INTEGER},
+      </if>
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
@@ -221,6 +246,12 @@
   <resultMap id="PaperInfoResultMap" type="com.mindskip.xzs.viewmodel.student.dashboard.PaperInfo">
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="subject_id" jdbcType="INTEGER" property="subjectId" />
+    <result column="paper_type" jdbcType="INTEGER" property="paperType" />
+    <result column="grade_level" jdbcType="INTEGER" property="gradeLevel" />
+    <result column="score" jdbcType="INTEGER" property="score" />
+    <result column="question_count" jdbcType="INTEGER" property="questionCount" />
+    <result column="suggest_time" jdbcType="INTEGER" property="suggestTime" />
     <result column="limit_start_time" jdbcType="TIMESTAMP" property="limitStartTime" />
     <result column="limit_end_time" jdbcType="TIMESTAMP" property="limitEndTime" />
   </resultMap>
@@ -244,9 +275,36 @@
       <if test="paperType != null ">
         and paper_type= #{paperType}
       </if>
+      <if test="name != null ">
+        and name like CONCAT(CONCAT('%', #{name}), '%')
+      </if>
     </where>
   </select>
 
+
+  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="com.mindskip.xzs.viewmodel.admin.exam.ExamPaperListRequestVM">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM t_exam_paper
+    <where>
+      and deleted=0
+      <if test="id != null ">
+        and id= #{id}
+      </if>
+      <if test="level != null ">
+        and grade_level= #{level}
+      </if>
+      <if test="subjectId != null ">
+        and subject_id= #{subjectId}
+      </if>
+      <if test="paperType != null ">
+        and paper_type= #{paperType}
+      </if>
+      <if test="setMethod != null ">
+        and set_method= #{setMethod}
+      </if>
+    </where>
+  </select>
 
 
 
@@ -275,13 +333,21 @@
       <if test="levelId != null ">
         and grade_level=#{levelId}
       </if>
-       and paper_type=#{paperType}
+      <if test="userId != null ">
+        and create_user=#{userId}
+      </if>
+      <if test="paperType != null ">
+        and paper_type=#{paperType}
+      </if>
+      <if test="name != null ">
+        and name like CONCAT(CONCAT('%', #{name}), '%')
+      </if>
     </where>
   </select>
 
 
   <select id="indexPaper" resultMap="PaperInfoResultMap" parameterType="com.mindskip.xzs.viewmodel.student.dashboard.PaperFilter">
-    SELECT id,name,limit_start_time,limit_end_time
+    SELECT id,name,grade_level,subject_id,score,suggest_time,question_count,limit_start_time,limit_end_time
     FROM t_exam_paper
     <where>
       and deleted=0
@@ -298,7 +364,7 @@
 
 
   <select id="selectAllCount"  resultType="java.lang.Integer">
-		SELECT count(*) from t_exam_paper where deleted=0
+		SELECT count(*) from t_exam_paper where deleted=0 and paper_type = 1
 	</select>
 
   <select id="selectCountByDate"  resultType="com.mindskip.xzs.domain.other.KeyValue">

@@ -7,7 +7,8 @@ public enum ExamPaperTypeEnum {
 
     Fixed(1, "固定试卷"),
     TimeLimit(4, "时段试卷"),
-    Task(6, "任务试卷");
+    Task(6, "任务试卷"),
+    IntelligenceTrain(8, "智能训练");
 
     int code;
     String name;

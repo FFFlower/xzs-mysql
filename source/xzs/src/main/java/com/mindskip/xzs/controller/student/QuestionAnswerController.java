@@ -6,24 +6,26 @@ import com.mindskip.xzs.domain.ExamPaperQuestionCustomerAnswer;
 import com.mindskip.xzs.domain.Subject;
 import com.mindskip.xzs.domain.TextContent;
 import com.mindskip.xzs.domain.question.QuestionObject;
+import com.mindskip.xzs.event.SubmitAnswerEvent;
 import com.mindskip.xzs.service.ExamPaperQuestionCustomerAnswerService;
 import com.mindskip.xzs.service.QuestionService;
 import com.mindskip.xzs.service.SubjectService;
 import com.mindskip.xzs.service.TextContentService;
-import com.mindskip.xzs.utility.DateTimeUtil;
-import com.mindskip.xzs.utility.HtmlUtil;
-import com.mindskip.xzs.utility.JsonUtil;
-import com.mindskip.xzs.utility.PageInfoHelper;
+import com.mindskip.xzs.utility.*;
 import com.mindskip.xzs.viewmodel.admin.question.QuestionEditRequestVM;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperSubmitItemVM;
+import com.mindskip.xzs.viewmodel.student.question.answer.QuestionAnswerRecordRequestVM;
 import com.mindskip.xzs.viewmodel.student.question.answer.QuestionAnswerVM;
 import com.mindskip.xzs.viewmodel.student.question.answer.QuestionPageStudentRequestVM;
 import com.mindskip.xzs.viewmodel.student.question.answer.QuestionPageStudentResponseVM;
 import com.github.pagehelper.PageInfo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.*;
 
 @RestController("StudentQuestionAnswerController")
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/student/question/answer")
 public class QuestionAnswerController extends BaseApiController {
 
@@ -31,14 +33,8 @@ public class QuestionAnswerController extends BaseApiController {
     private final QuestionService questionService;
     private final TextContentService textContentService;
     private final SubjectService subjectService;
-
-    @Autowired
-    public QuestionAnswerController(ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService, QuestionService questionService, TextContentService textContentService, SubjectService subjectService) {
-        this.examPaperQuestionCustomerAnswerService = examPaperQuestionCustomerAnswerService;
-        this.questionService = questionService;
-        this.textContentService = textContentService;
-        this.subjectService = subjectService;
-    }
+    private final RedisUtils redisUtils;
+    private final ApplicationEventPublisher eventPublisher;
 
     @RequestMapping(value = "/page", method = RequestMethod.POST)
     public RestResponse<PageInfo<QuestionPageStudentResponseVM>> pageList(@RequestBody QuestionPageStudentRequestVM model) {
@@ -68,6 +64,33 @@ public class QuestionAnswerController extends BaseApiController {
         vm.setQuestionVM(questionVM);
         vm.setQuestionAnswerVM(questionAnswerVM);
         return RestResponse.ok(vm);
+    }
+
+    /**
+     * 记录答题记录
+     * @param model
+     * @return com.mindskip.xzs.base.RestResponse<java.lang.String>
+     * @throws Exception
+     */
+    @RequestMapping(value = "/practice/record", method = RequestMethod.POST)
+    public RestResponse<String> practiceRecord(@RequestBody QuestionAnswerRecordRequestVM model) {
+        String key = "PRACTICE:RECORD:" + getCurrentUser().getId() + ":" + model.getLevel() + ":" + model.getSubjectId();
+        redisUtils.set(key, model.getQuestionId());
+        model.setCreateUser(getCurrentUser().getId());
+        eventPublisher.publishEvent(new SubmitAnswerEvent(model));
+        return RestResponse.ok(null);
+    }
+
+    /**
+     * 查看上次练习答题的记录
+     * @param model
+     * @return com.mindskip.xzs.base.RestResponse<java.lang.Integer>
+     * @throws Exception
+     */
+    @RequestMapping(value = "/practice/viewRecord", method = RequestMethod.POST)
+    public RestResponse<Object> practiceViewRecord(@RequestBody QuestionAnswerRecordRequestVM model) {
+        String key = "PRACTICE:RECORD:" + getCurrentUser().getId() + ":" + model.getLevel() + ":" + model.getSubjectId();
+        return RestResponse.ok(redisUtils.get(key));
     }
 
 }

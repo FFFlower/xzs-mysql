@@ -18,6 +18,21 @@
     from t_user_event_log
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_user_event_log
+    where id in
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from t_user_event_log
     where id = #{id,jdbcType=INTEGER}

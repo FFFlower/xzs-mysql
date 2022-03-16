@@ -3,9 +3,11 @@ package com.mindskip.xzs.controller.admin;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.ExamPaper;
+import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.service.ExamPaperService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
+import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperAutoGenRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperPageRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperEditRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamResponseVM;
@@ -28,6 +30,7 @@ public class ExamPaperController extends BaseApiController {
 
     @RequestMapping(value = "/page", method = RequestMethod.POST)
     public RestResponse<PageInfo<ExamResponseVM>> pageList(@RequestBody ExamPaperPageRequestVM model) {
+        model.setPaperType(ExamPaperTypeEnum.Fixed.getCode());
         PageInfo<ExamPaper> pageInfo = examPaperService.page(model);
         PageInfo<ExamResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
             ExamResponseVM vm = modelMapper.map(e, ExamResponseVM.class);
@@ -57,6 +60,15 @@ public class ExamPaperController extends BaseApiController {
         ExamPaper examPaper = examPaperService.savePaperFromVM(model, getCurrentUser());
         ExamPaperEditRequestVM newVM = examPaperService.examPaperToVM(examPaper.getId());
         return RestResponse.ok(newVM);
+    }
+
+    @RequestMapping(value = "/autoGenerate", method = RequestMethod.POST)
+    public RestResponse<ExamPaperAutoGenRequestVM> autoGen(@RequestBody @Valid ExamPaperAutoGenRequestVM model) {
+        ExamPaper examPaper = examPaperService.savePaperFromAuto(model, getCurrentUser());
+        if (null == examPaper) {
+            return RestResponse.fail(2, "暂无试题，请联系管理员添加");
+        }
+        return RestResponse.ok();
     }
 
     @RequestMapping(value = "/select/{id}", method = RequestMethod.POST)

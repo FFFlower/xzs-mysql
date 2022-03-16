@@ -31,6 +31,16 @@
     from t_user
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_user
+    where id in
+    <foreach item="id" collection="list" open="(" separator=","
+             close=")">
+      #{id}
+    </foreach>
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from t_user
     where id = #{id,jdbcType=INTEGER}
@@ -339,12 +349,18 @@
   <insert id="insertUsers" parameterType="java.util.List"
           useGeneratedKeys="true" keyProperty="id">
     insert into t_user
-    (user_uuid,user_name,password,real_name,age,last_active_time)
+    (user_uuid, user_name,
+    password, real_name, age,
+    sex, birth_day, user_level,
+    phone, role, status,
+    image_path, create_time, modify_time,
+    last_active_time, deleted)
     values
     <foreach collection="list" item="item" index="index"
              separator=",">
       (#{item.userUuid},#{item.userName},#{item.password},#{item.realName},#{item.age},
-      #{item.lastActiveTime})
+      #{item.sex},#{item.birthDay},#{item.userLevel},#{item.phone},#{item.role},#{item.status},#{item.imagePath},#{item.createTime},#{item.modifyTime},#{item.lastActiveTime}
+      ,#{item.deleted})
     </foreach>
   </insert>
 
@@ -376,6 +392,14 @@
       #{id}
     </foreach>
   </delete>
+
+  <update id="deleteByIdsLogic">
+    update t_user set deleted = true where id in
+    <foreach item="id" collection="ids" open="(" separator=","
+             close=")">
+      #{id}
+    </foreach>
+  </update>
 
   <select id="selectAllCount"  resultType="java.lang.Integer">
 		SELECT count(*) from t_user where deleted=0

@@ -1,5 +1,7 @@
 package com.mindskip.xzs.service;
 
+import java.util.List;
+
 /**
  * service接口，和mybatis generator 配套使用
  *
@@ -53,4 +55,12 @@ public interface BaseService<T> {
      * @return int
      */
     int updateById(T record);
+
+    /**
+     * 根据id集合查询数据
+     *
+     * @param ids
+     * @return
+     */
+    List<T> selectByIds(List<Integer> ids);
 }

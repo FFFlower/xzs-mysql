@@ -67,6 +67,11 @@ public class ExamPaper implements Serializable {
 
     private Integer taskExamId;
 
+    /**
+     * 出题方式( 1.顺序出题 2.随机出题 3.自选)
+     */
+    private Integer setMethod;
+
     public Integer getId() {
         return id;
     }
@@ -185,5 +190,13 @@ public class ExamPaper implements Serializable {
 
     public void setTaskExamId(Integer taskExamId) {
         this.taskExamId = taskExamId;
+    }
+
+    public Integer getSetMethod() {
+        return setMethod;
+    }
+
+    public void setSetMethod(Integer setMethod) {
+        this.setMethod = setMethod;
     }
 }

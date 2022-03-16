@@ -2,17 +2,11 @@ package com.mindskip.xzs.controller.wx.student;
 
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.controller.wx.BaseWXApiController;
-import com.mindskip.xzs.domain.TaskExam;
-import com.mindskip.xzs.domain.TaskExamCustomerAnswer;
-import com.mindskip.xzs.domain.TextContent;
-import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.domain.task.TaskItemAnswerObject;
 import com.mindskip.xzs.domain.task.TaskItemObject;
-import com.mindskip.xzs.service.ExamPaperService;
-import com.mindskip.xzs.service.TaskExamCustomerAnswerService;
-import com.mindskip.xzs.service.TaskExamService;
-import com.mindskip.xzs.service.TextContentService;
+import com.mindskip.xzs.service.*;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.JsonUtil;
 import com.mindskip.xzs.viewmodel.student.dashboard.*;
@@ -37,13 +31,15 @@ public class DashboardController extends BaseWXApiController {
     private final TextContentService textContentService;
     private final TaskExamService taskExamService;
     private final TaskExamCustomerAnswerService taskExamCustomerAnswerService;
+    private final SubjectService subjectService;
 
     @Autowired
-    public DashboardController(ExamPaperService examPaperService, TextContentService textContentService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService) {
+    public DashboardController(ExamPaperService examPaperService, TextContentService textContentService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService, SubjectService subjectService) {
         this.examPaperService = examPaperService;
         this.textContentService = textContentService;
         this.taskExamService = taskExamService;
         this.taskExamCustomerAnswerService = taskExamCustomerAnswerService;
+        this.subjectService = subjectService;
     }
 
     @RequestMapping(value = "/index", method = RequestMethod.POST)
@@ -59,7 +55,7 @@ public class DashboardController extends BaseWXApiController {
         PaperFilter timeLimitPaperFilter = new PaperFilter();
         timeLimitPaperFilter.setDateTime(new Date());
         timeLimitPaperFilter.setGradeLevel(user.getUserLevel());
-        timeLimitPaperFilter.setExamPaperType(ExamPaperTypeEnum.TimeLimit.getCode());
+        timeLimitPaperFilter.setExamPaperType(ExamPaperTypeEnum.IntelligenceTrain.getCode());
 
         List<PaperInfo> limitPaper = examPaperService.indexPaper(timeLimitPaperFilter);
         List<PaperInfoVM> paperInfoVMS = limitPaper.stream().map(d -> {
@@ -125,5 +121,10 @@ public class DashboardController extends BaseWXApiController {
         ).collect(Collectors.toList());
     }
 
+    @RequestMapping(value = "/subject/all-list", method = RequestMethod.POST)
+    public RestResponse<List<Subject>> allList() {
+        List<Subject> subjects = subjectService.list();
+        return RestResponse.ok(subjects);
+    }
 
 }

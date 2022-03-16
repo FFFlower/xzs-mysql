@@ -29,7 +29,7 @@ public class EducationController extends BaseApiController {
 
     @RequestMapping(value = "/subject/list", method = RequestMethod.POST)
     public RestResponse<List<Subject>> list() {
-        List<Subject> subjects = subjectService.allSubject();
+        List<Subject> subjects = subjectService.list();
         return RestResponse.ok(subjects);
     }
 

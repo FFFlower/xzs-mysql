@@ -13,6 +13,7 @@ import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.ExamUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperEditRequestVM;
+import com.mindskip.xzs.viewmodel.student.exam.ExamPaperReadResponseVM;
 import com.mindskip.xzs.viewmodel.student.exampaper.ExamPaperAnswerPageResponseVM;
 import com.mindskip.xzs.viewmodel.student.exampaper.ExamPaperAnswerPageVM;
 import com.github.pagehelper.PageInfo;
@@ -49,7 +50,7 @@ public class ExamPaperAnswerController extends BaseWXApiController {
     }
 
     @RequestMapping(value = "/pageList", method = RequestMethod.POST)
-    public RestResponse<PageInfo<ExamPaperAnswerPageResponseVM>> pageList(@Valid ExamPaperAnswerPageVM model) {
+    public RestResponse<PageInfo<ExamPaperAnswerPageResponseVM>> pageList(@RequestBody ExamPaperAnswerPageVM model) {
         model.setCreateUser(getCurrentUser().getId());
         PageInfo<ExamPaperAnswer> pageInfo = examPaperAnswerService.studentPage(model);
         PageInfo<ExamPaperAnswerPageResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
@@ -70,6 +71,26 @@ public class ExamPaperAnswerController extends BaseWXApiController {
     @RequestMapping(value = "/answerSubmit", method = RequestMethod.POST)
     public RestResponse answerSubmit(HttpServletRequest request) {
         ExamPaperSubmitVM examPaperSubmitVM = requestToExamPaperSubmitVM(request);
+        User user = getCurrentUser();
+        ExamPaperAnswerInfo examPaperAnswerInfo = examPaperAnswerService.calculateExamPaperAnswer(examPaperSubmitVM, user);
+        if (null == examPaperAnswerInfo) {
+            return RestResponse.fail(2, "试卷不能重复做");
+        }
+        ExamPaperAnswer examPaperAnswer = examPaperAnswerInfo.getExamPaperAnswer();
+        Integer userScore = examPaperAnswer.getUserScore();
+        String scoreVm = ExamUtil.scoreToVM(userScore);
+        UserEventLog userEventLog = new UserEventLog(user.getId(), user.getUserName(), user.getRealName(), new Date());
+        String content = user.getUserName() + " 提交试卷：" + examPaperAnswerInfo.getExamPaper().getName()
+                + " 得分：" + scoreVm
+                + " 耗时：" + ExamUtil.secondToVM(examPaperAnswer.getDoTime());
+        userEventLog.setContent(content);
+        eventPublisher.publishEvent(new CalculateExamPaperAnswerCompleteEvent(examPaperAnswerInfo));
+        eventPublisher.publishEvent(new UserEvent(userEventLog));
+        return RestResponse.ok(scoreVm);
+    }
+
+    @RequestMapping(value = "/answerSubmit2", method = RequestMethod.POST)
+    public RestResponse answerSubmit2(@RequestBody @Valid ExamPaperSubmitVM examPaperSubmitVM) {
         User user = getCurrentUser();
         ExamPaperAnswerInfo examPaperAnswerInfo = examPaperAnswerService.calculateExamPaperAnswer(examPaperSubmitVM, user);
         if (null == examPaperAnswerInfo) {
@@ -130,6 +151,12 @@ public class ExamPaperAnswerController extends BaseWXApiController {
         ExamPaperSubmitVM answer = examPaperAnswerService.examPaperAnswerToVM(examPaperAnswer.getId());
         vm.setPaper(paper);
         vm.setAnswer(answer);
+        return RestResponse.ok(vm);
+    }
+
+    @PostMapping(value = "/record/{id}")
+    public RestResponse<ExamPaperReadResponseVM> record(@PathVariable Integer id) {
+        ExamPaperReadResponseVM vm = examPaperAnswerService.examPaperAnswerToReadVM(id);
         return RestResponse.ok(vm);
     }
 }

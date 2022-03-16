@@ -7,3 +7,18 @@ spring:
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
+
+# 文件存储路径
+file:
+  mac:
+    path: ~/file/examsystem/
+    avatar: ~/avatar/examsystem/
+  linux:
+    path: /home/eladmin/file/
+    avatar: /home/eladmin/avatar/
+  windows:
+    path: C:\eladmin\file\
+    avatar: C:\eladmin\avatar\
+  # 文件大小 /M
+  maxSize: 100
+  avatarMaxSize: 5

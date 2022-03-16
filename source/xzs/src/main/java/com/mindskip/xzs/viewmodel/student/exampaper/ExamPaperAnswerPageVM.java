@@ -6,6 +6,8 @@ public class ExamPaperAnswerPageVM extends BasePage {
 
     private Integer subjectId;
 
+    private Integer paperType;
+
     private Integer createUser;
 
     public Integer getSubjectId() {
@@ -22,5 +24,13 @@ public class ExamPaperAnswerPageVM extends BasePage {
 
     public void setCreateUser(Integer createUser) {
         this.createUser = createUser;
+    }
+
+    public Integer getPaperType() {
+        return paperType;
+    }
+
+    public void setPaperType(Integer paperType) {
+        this.paperType = paperType;
     }
 }

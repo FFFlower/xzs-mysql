@@ -3,6 +3,8 @@ package com.mindskip.xzs.service.impl;
 import com.mindskip.xzs.repository.BaseMapper;
 import com.mindskip.xzs.service.BaseService;
 
+import java.util.List;
+
 public abstract class BaseServiceImpl<T> implements BaseService<T> {
 
     private final BaseMapper<T> baseMapper;
@@ -39,5 +41,10 @@ public abstract class BaseServiceImpl<T> implements BaseService<T> {
     @Override
     public int updateById(T record) {
         return baseMapper.updateByPrimaryKey(record);
+    }
+
+    @Override
+    public List<T> selectByIds(List<Integer> ids) {
+        return baseMapper.selectByPrimaryKeys(ids);
     }
 }

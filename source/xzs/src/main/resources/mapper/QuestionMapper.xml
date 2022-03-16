@@ -25,6 +25,21 @@
     from t_question
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_question
+    where id in
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from t_question
     where id = #{id,jdbcType=INTEGER}
@@ -159,6 +174,12 @@
     </set>
     where id = #{id,jdbcType=INTEGER}
   </update>
+
+  <update id="delBySubjectId" parameterType="java.lang.Integer">
+    update t_question set deleted = true where subject_id = #{subjectId,jdbcType=INTEGER}
+
+  </update>
+
   <update id="updateByPrimaryKey" parameterType="com.mindskip.xzs.domain.Question">
     update t_question
     set question_type = #{questionType,jdbcType=INTEGER},
@@ -193,12 +214,88 @@
       <if test="subjectId != null ">
         and subject_id= #{subjectId}
       </if>
+      <if test="currentIdStart != null ">
+        and id > #{currentIdStart}
+      </if>
+      <if test="currentIdEnd != null ">
+        and id <![CDATA[ <= ]]> #{currentIdEnd}
+      </if>
       <if test="questionType != null ">
         and question_type= #{questionType}
+      </if>
+      <if test="orderBy != null">
+        order by ${orderBy}
+      </if>
+      <if test="sort != null">
+        ${sort}
       </if>
     </where>
   </select>
 
+  <select id="pageByContent" resultMap="BaseResultMap" parameterType="com.mindskip.xzs.viewmodel.admin.question.QuestionPageRequestVM">
+    SELECT
+    t.id, t.question_type, t.subject_id, t.score, t.grade_level, t.difficult, t.correct, t.info_text_content_id,
+    t.create_user, t.status, t.create_time, t.deleted
+    FROM t_question t
+    left join t_text_content c on t.info_text_content_id = c.id
+    <where>
+      and deleted=0
+      <if test="id != null ">
+        and t.id= #{id}
+      </if>
+      <if test="level != null ">
+        and t.grade_level= #{level}
+      </if>
+      <if test="subjectId != null ">
+        and t.subject_id= #{subjectId}
+      </if>
+      <if test="currentIdStart != null ">
+        and t.id > #{currentIdStart}
+      </if>
+      <if test="currentIdEnd != null ">
+        and t.id <![CDATA[ <= ]]> #{currentIdEnd}
+      </if>
+      <if test="questionType != null ">
+        and t.question_type= #{questionType}
+      </if>
+      <if test="content != null and content != ''">
+        and c.content like CONCAT('{"titleContent":"%', #{content},'%')
+      </if>
+      <if test="orderBy != null">
+        order by ${orderBy}
+      </if>
+      <if test="sort != null">
+        ${sort}
+      </if>
+    </where>
+  </select>
+
+  <select id="selectCount" resultType="java.lang.Integer" parameterType="com.mindskip.xzs.viewmodel.admin.question.QuestionPageRequestVM">
+    SELECT
+        count(*)
+    FROM t_question
+    <where>
+      and deleted=0
+      <if test="id != null ">
+        and id= #{id}
+      </if>
+      <if test="level != null ">
+        and grade_level= #{level}
+      </if>
+      <if test="subjectId != null ">
+        and subject_id= #{subjectId}
+      </if>
+      <if test="questionType != null ">
+        and question_type= #{questionType}
+      </if>
+      <if test="currentIdStart != null ">
+        and id > #{currentIdStart}
+      </if>
+      <if test="currentIdEnd != null ">
+        and id <![CDATA[ <= ]]> #{currentIdEnd}
+      </if>
+    </where>
+  </select>
 
 
   <select id="selectByIds" resultMap="BaseResultMap" >
@@ -210,6 +307,14 @@
       #{id}
     </foreach>
   </select>
+
+  <update id="deleteByIds">
+    update t_question set deleted = true where id in
+    <foreach item="id" collection="ids" open="(" separator=","
+             close=")">
+      #{id}
+    </foreach>
+  </update>
 
 
   <select id="selectAllCount"  resultType="java.lang.Integer">
@@ -224,5 +329,45 @@
 				) a
 		GROUP BY create_time
 	</select>
+
+  <select id="selectByCondition" resultMap="BaseResultMap" parameterType="com.mindskip.xzs.viewmodel.admin.question.QuestionListRequestVM">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM t_question
+    <where>
+      and deleted=0
+      <if test="id != null ">
+        and id= #{id}
+      </if>
+      <if test="level != null ">
+        and grade_level= #{level}
+      </if>
+      <if test="subjectId != null ">
+        and subject_id= #{subjectId}
+      </if>
+      <if test="questionType != null ">
+        and question_type= #{questionType}
+      </if>
+      <if test="preId != null ">
+        and id > #{preId}
+      </if>
+    </where>
+    <if test="notInIds != null and notInIds.size > 0">
+        and id not in
+      <foreach item="id" collection="notInIds" open="(" separator=","
+               close=")">
+        #{id}
+      </foreach>
+    </if>
+    <if test="orderBy != null">
+      order by ${orderBy}
+    </if>
+    <if test="sort != null">
+      ${sort}
+    </if>
+    <if test="limit != null ">
+      limit ${limit}
+    </if>
+  </select>
 
 </mapper>

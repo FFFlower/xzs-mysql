@@ -2,6 +2,7 @@ package com.mindskip.xzs.repository;
 
 import com.mindskip.xzs.domain.ExamPaper;
 import com.mindskip.xzs.domain.other.KeyValue;
+import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperListRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperPageRequestVM;
 import com.mindskip.xzs.viewmodel.student.dashboard.PaperFilter;
 import com.mindskip.xzs.viewmodel.student.dashboard.PaperInfo;
@@ -41,4 +42,6 @@ public interface ExamPaperMapper extends BaseMapper<ExamPaper> {
     int updateTaskPaper(@Param("taskId") Integer taskId,@Param("paperIds") List<Integer> paperIds);
 
     int clearTaskPaper(@Param("paperIds") List<Integer> paperIds);
+
+    List<ExamPaper> selectByCondition(ExamPaperListRequestVM requestVM);
 }

@@ -1,11 +1,17 @@
 package com.mindskip.xzs.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.poi.excel.ExcelReader;
+import com.mindskip.xzs.configuration.property.FileProperties;
 import com.mindskip.xzs.domain.other.KeyValue;
+import com.mindskip.xzs.exception.BadRequestException;
 import com.mindskip.xzs.exception.BusinessException;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.event.OnRegistrationCompleteEvent;
 import com.mindskip.xzs.repository.UserMapper;
+import com.mindskip.xzs.service.AuthenticationService;
 import com.mindskip.xzs.service.UserService;
+import com.mindskip.xzs.utility.FileUtil;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -15,10 +21,11 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
 /**
  * @author 武汉思维跳跃科技有限公司
@@ -114,10 +121,9 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     }
 
     @Override
-    @Transactional(rollbackFor = BusinessException.class)
+    @Transactional(rollbackFor = Exception.class)
     public void insertUsers(List<User> users) {
         userMapper.insertUsers(users);
-        throw new BusinessException("test BusinessException roll back");
     }
 
     @Override
@@ -166,5 +172,37 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
         changePictureUser.setId(user.getId());
         changePictureUser.setImagePath(imagePath);
         userMapper.updateByPrimaryKeySelective(changePictureUser);
+    }
+
+    @Override
+    public void deleteByIdsLogic(Integer[] ids) {
+        userMapper.deleteByIdsLogic(ids);
+    }
+
+    @Override
+    public void insertUsersByExcel(List<User> users) {
+        validateUserName(users);
+        this.insertUsers(users);
+    }
+
+    private void validateUserName(List<User> userList) {
+        if (CollectionUtils.isEmpty(userList)) {
+            return;
+        }
+        Map<String, User> userMap = new HashMap<>();
+        for (User user : userList) {
+            if (userMap.containsKey(user.getUserName())) {
+                throw new BadRequestException("登录名【"+ user.getUserName() +"】重复，请检查！");
+            }
+            userMap.put(user.getUserName(), user);
+        }
+        List<User> allUser = userMapper.getAllUser();
+        if (!CollectionUtils.isEmpty(allUser)) {
+            for (User user : userMapper.getAllUser()) {
+                if (userMap.containsKey(user.getUserName())) {
+                    throw new BadRequestException("登录名【"+ user.getUserName() +"】重复，请检查！");
+                }
+            }
+        }
     }
 }

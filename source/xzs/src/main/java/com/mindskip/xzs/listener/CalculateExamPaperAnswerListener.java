@@ -4,10 +4,8 @@ import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.domain.enums.QuestionTypeEnum;
 import com.mindskip.xzs.event.CalculateExamPaperAnswerCompleteEvent;
-import com.mindskip.xzs.service.ExamPaperAnswerService;
-import com.mindskip.xzs.service.ExamPaperQuestionCustomerAnswerService;
-import com.mindskip.xzs.service.TaskExamCustomerAnswerService;
-import com.mindskip.xzs.service.TextContentService;
+import com.mindskip.xzs.service.*;
+import com.mindskip.xzs.utility.ModelMapperSingle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -15,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -27,13 +26,15 @@ public class CalculateExamPaperAnswerListener implements ApplicationListener<Cal
     private final ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService;
     private final TextContentService textContentService;
     private final TaskExamCustomerAnswerService examCustomerAnswerService;
+    private final ExamErrorQuestionService examErrorQuestionService;
 
     @Autowired
-    public CalculateExamPaperAnswerListener(ExamPaperAnswerService examPaperAnswerService, ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService, TextContentService textContentService, TaskExamCustomerAnswerService examCustomerAnswerService) {
+    public CalculateExamPaperAnswerListener(ExamPaperAnswerService examPaperAnswerService, ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService, TextContentService textContentService, TaskExamCustomerAnswerService examCustomerAnswerService, ExamErrorQuestionService examErrorQuestionService) {
         this.examPaperAnswerService = examPaperAnswerService;
         this.examPaperQuestionCustomerAnswerService = examPaperQuestionCustomerAnswerService;
         this.textContentService = textContentService;
         this.examCustomerAnswerService = examCustomerAnswerService;
+        this.examErrorQuestionService = examErrorQuestionService;
     }
 
     @Override
@@ -66,5 +67,7 @@ public class CalculateExamPaperAnswerListener implements ApplicationListener<Cal
             default:
                 break;
         }
+        List<ExamErrorQuestion> errorQuestionList = examPaperQuestionCustomerAnswers.stream().filter(x->!x.getDoRight()).map(x -> ModelMapperSingle.Instance().map(x, ExamErrorQuestion.class)).collect(Collectors.toList());
+        examErrorQuestionService.insertList(errorQuestionList);
     }
 }

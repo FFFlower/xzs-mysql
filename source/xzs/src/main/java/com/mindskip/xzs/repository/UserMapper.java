@@ -145,4 +145,6 @@ public interface UserMapper extends BaseMapper<User> {
 
 
     User selectByWxOpenId(@Param("wxOpenId") String wxOpenId);
+
+    void deleteByIdsLogic(@Param("ids") Integer[] ids);
 }

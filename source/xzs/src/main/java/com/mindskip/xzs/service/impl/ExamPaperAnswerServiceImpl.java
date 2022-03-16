@@ -7,24 +7,27 @@ import com.mindskip.xzs.domain.enums.QuestionTypeEnum;
 import com.mindskip.xzs.domain.exam.ExamPaperTitleItemObject;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.other.ExamPaperAnswerUpdate;
+import com.mindskip.xzs.domain.question.QuestionObject;
 import com.mindskip.xzs.domain.task.TaskItemAnswerObject;
-import com.mindskip.xzs.repository.*;
 import com.mindskip.xzs.repository.ExamPaperAnswerMapper;
 import com.mindskip.xzs.repository.ExamPaperMapper;
 import com.mindskip.xzs.repository.QuestionMapper;
 import com.mindskip.xzs.repository.TaskExamCustomerAnswerMapper;
 import com.mindskip.xzs.service.ExamPaperAnswerService;
 import com.mindskip.xzs.service.ExamPaperQuestionCustomerAnswerService;
+import com.mindskip.xzs.service.SubjectService;
 import com.mindskip.xzs.service.TextContentService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.ExamUtil;
 import com.mindskip.xzs.utility.JsonUtil;
+import com.mindskip.xzs.utility.ModelMapperSingle;
+import com.mindskip.xzs.viewmodel.student.exam.ExamPaperQuestionReadVM;
+import com.mindskip.xzs.viewmodel.student.exam.ExamPaperReadResponseVM;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperSubmitItemVM;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperSubmitVM;
 import com.mindskip.xzs.viewmodel.student.exampaper.ExamPaperAnswerPageVM;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.mindskip.xzs.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,9 +46,10 @@ public class ExamPaperAnswerServiceImpl extends BaseServiceImpl<ExamPaperAnswer>
     private final QuestionMapper questionMapper;
     private final ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService;
     private final TaskExamCustomerAnswerMapper taskExamCustomerAnswerMapper;
+    private final SubjectService subjectService;
 
     @Autowired
-    public ExamPaperAnswerServiceImpl(ExamPaperAnswerMapper examPaperAnswerMapper, ExamPaperMapper examPaperMapper, TextContentService textContentService, QuestionMapper questionMapper, ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService, TaskExamCustomerAnswerMapper taskExamCustomerAnswerMapper) {
+    public ExamPaperAnswerServiceImpl(ExamPaperAnswerMapper examPaperAnswerMapper, ExamPaperMapper examPaperMapper, TextContentService textContentService, QuestionMapper questionMapper, ExamPaperQuestionCustomerAnswerService examPaperQuestionCustomerAnswerService, TaskExamCustomerAnswerMapper taskExamCustomerAnswerMapper, SubjectService subjectService) {
         super(examPaperAnswerMapper);
         this.examPaperAnswerMapper = examPaperAnswerMapper;
         this.examPaperMapper = examPaperMapper;
@@ -53,6 +57,7 @@ public class ExamPaperAnswerServiceImpl extends BaseServiceImpl<ExamPaperAnswer>
         this.questionMapper = questionMapper;
         this.examPaperQuestionCustomerAnswerService = examPaperQuestionCustomerAnswerService;
         this.taskExamCustomerAnswerMapper = taskExamCustomerAnswerMapper;
+        this.subjectService = subjectService;
     }
 
     @Override
@@ -69,7 +74,7 @@ public class ExamPaperAnswerServiceImpl extends BaseServiceImpl<ExamPaperAnswer>
         ExamPaper examPaper = examPaperMapper.selectByPrimaryKey(examPaperSubmitVM.getId());
         ExamPaperTypeEnum paperTypeEnum = ExamPaperTypeEnum.fromCode(examPaper.getPaperType());
         //任务试卷只能做一次
-        if (paperTypeEnum == ExamPaperTypeEnum.Task) {
+        if (paperTypeEnum == ExamPaperTypeEnum.Fixed) {
             ExamPaperAnswer examPaperAnswer = examPaperAnswerMapper.getByPidUid(examPaperSubmitVM.getId(), user.getId());
             if (null != examPaperAnswer)
                 return null;
@@ -274,5 +279,29 @@ public class ExamPaperAnswerServiceImpl extends BaseServiceImpl<ExamPaperAnswer>
     public PageInfo<ExamPaperAnswer> adminPage(com.mindskip.xzs.viewmodel.admin.paper.ExamPaperAnswerPageRequestVM requestVM) {
         return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), "id desc").doSelectPageInfo(() ->
                 examPaperAnswerMapper.adminPage(requestVM));
+    }
+
+    @Override
+    public ExamPaperReadResponseVM examPaperAnswerToReadVM(Integer id) {
+        ExamPaperAnswer examPaperAnswer = examPaperAnswerMapper.selectByPrimaryKey(id);
+        List<ExamPaperQuestionCustomerAnswer> examPaperQuestionCustomerAnswers = examPaperQuestionCustomerAnswerService.selectListByPaperAnswerId(examPaperAnswer.getId());
+        ExamPaperReadResponseVM vm = new ExamPaperReadResponseVM();
+        vm.setId(examPaperAnswer.getId());
+        vm.setScore(ExamUtil.scoreToVM(examPaperAnswer.getPaperScore()));
+        vm.setUserScore(ExamUtil.scoreToVM(examPaperAnswer.getUserScore()));
+        vm.setDoTime(ExamUtil.secondToVM(examPaperAnswer.getDoTime()));
+        vm.setPaperName(examPaperAnswer.getPaperName());
+        vm.setQuestionCount(examPaperAnswer.getQuestionCount());
+        vm.setCreateTime(DateTimeUtil.dateFormat(examPaperAnswer.getCreateTime()));
+        vm.setSubjectName(subjectService.selectById(examPaperAnswer.getSubjectId()).getName());
+        vm.setExamAnswers(examPaperQuestionCustomerAnswers.stream().map(x -> {
+            ExamPaperQuestionReadVM questionReadVM = ModelMapperSingle.Instance().map(x, ExamPaperQuestionReadVM.class);
+            TextContent textContent = textContentService.selectById(x.getQuestionTextContentId());
+            QuestionObject questionObject = JsonUtil.toJsonObject(textContent.getContent(), QuestionObject.class);
+            questionReadVM.setQuestion(questionObject);
+            questionReadVM.setId(x.getId());
+            return questionReadVM;
+        }).collect(Collectors.toList()));
+        return vm;
     }
 }

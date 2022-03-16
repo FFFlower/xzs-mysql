@@ -9,6 +9,7 @@ import com.mindskip.xzs.service.UserTokenService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,7 @@ public class UserTokenServiceImpl extends BaseServiceImpl<UserToken> implements 
     }
 
     @Override
-    @Cacheable(value = CACHE_NAME, key = "#result.token", unless = "#result == null")
+    @CachePut(value = CACHE_NAME, key = "#result.token")
     public UserToken insertUserToken(User user) {
         Date startTime = new Date();
         Date endTime = DateTimeUtil.addDuration(startTime, systemConfig.getWx().getTokenToLive());

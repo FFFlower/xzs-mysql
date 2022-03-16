@@ -32,4 +32,6 @@ public interface ExamPaperAnswerMapper extends BaseMapper<ExamPaperAnswer> {
     ExamPaperAnswer getByPidUid(@Param("pid") Integer paperId, @Param("uid") Integer uid);
 
     List<ExamPaperAnswer> adminPage(com.mindskip.xzs.viewmodel.admin.paper.ExamPaperAnswerPageRequestVM requestVM);
+
+    List<ExamPaperAnswer> list(ExamPaperAnswerPageVM requestVM);
 }

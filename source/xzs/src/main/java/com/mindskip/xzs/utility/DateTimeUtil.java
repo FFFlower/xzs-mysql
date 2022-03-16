@@ -17,6 +17,8 @@ public class DateTimeUtil {
     private static final Logger logger = LoggerFactory.getLogger(DateTimeUtil.class);
     public static final String STANDER_FORMAT = "yyyy-MM-dd HH:mm:ss";
     public static final String STANDER_SHORT_FORMAT = "yyyy-MM-dd";
+    public static final String NO_SYMBOL_SHORT_FORMAT = "yyyyMMdd";
+    public static final String NO_SYMBOL_STANDER_FORMAT = "yyyyMMddHHmmss";
 
     public static Date addDuration(Date date, Duration duration) {
         Calendar ca = Calendar.getInstance();
@@ -38,6 +40,22 @@ public class DateTimeUtil {
             return "";
         }
         DateFormat dateFormat = new SimpleDateFormat(STANDER_SHORT_FORMAT);
+        return dateFormat.format(date);
+    }
+
+    public static String dateNoSymbolShortFormat(Date date) {
+        if (null == date) {
+            return "";
+        }
+        DateFormat dateFormat = new SimpleDateFormat(NO_SYMBOL_SHORT_FORMAT);
+        return dateFormat.format(date);
+    }
+
+    public static String dateNoSymbolFormat(Date date) {
+        if (null == date) {
+            return "";
+        }
+        DateFormat dateFormat = new SimpleDateFormat(NO_SYMBOL_STANDER_FORMAT);
         return dateFormat.format(date);
     }
 

@@ -5,6 +5,7 @@ import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.ExamPaperAnswer;
 import com.mindskip.xzs.domain.Subject;
 import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.service.*;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.ExamUtil;
@@ -33,6 +34,7 @@ public class ExamPaperAnswerController extends BaseApiController {
 
     @RequestMapping(value = "/page", method = RequestMethod.POST)
     public RestResponse<PageInfo<ExamPaperAnswerPageResponseVM>> pageJudgeList(@RequestBody ExamPaperAnswerPageRequestVM model) {
+        model.setPaperType(ExamPaperTypeEnum.Fixed.getCode());
         PageInfo<ExamPaperAnswer> pageInfo = examPaperAnswerService.adminPage(model);
         PageInfo<ExamPaperAnswerPageResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
             ExamPaperAnswerPageResponseVM vm = modelMapper.map(e, ExamPaperAnswerPageResponseVM.class);

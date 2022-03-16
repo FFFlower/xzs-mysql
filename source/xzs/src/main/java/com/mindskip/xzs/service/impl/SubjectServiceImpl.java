@@ -48,6 +48,11 @@ public class SubjectServiceImpl extends BaseServiceImpl<Subject> implements Subj
     }
 
     @Override
+    public List<Subject> list() {
+        return subjectMapper.list();
+    }
+
+    @Override
     public Integer levelBySubjectId(Integer id) {
         return this.selectById(id).getLevel();
     }

@@ -29,6 +29,21 @@
     from t_exam_paper_question_customer_answer
     where id = #{id,jdbcType=INTEGER}
   </select>
+  <select id="selectByPrimaryKeys" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from t_exam_paper_question_customer_answer
+    where id in
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
+  </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from t_exam_paper_question_customer_answer
     where id = #{id,jdbcType=INTEGER}
@@ -258,7 +273,7 @@
 
 
   <select id="selectAllCount"  resultType="java.lang.Integer">
-		SELECT count(*) from t_exam_paper_question_customer_answer
+		SELECT count(*) from t_exam_paper_question_customer_answer qca left join t_exam_paper_answer pa on qca.exam_paper_answer_id = pa.id where pa.paper_type = 1
   </select>
 
 

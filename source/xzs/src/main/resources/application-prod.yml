@@ -1,9 +1,39 @@
 logging:
-  path: /usr/log/xzs/
+  path: /usr/log/exam_system/
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/xzs?useSSL=false&useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&allowPublicKeyRetrieval=true&allowMultiQueries=true
+    url: jdbc:mysql://172.17.251.188:3306/exam_system?useSSL=false&useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&allowPublicKeyRetrieval=true&allowMultiQueries=true
     username: root
-    password: 123456
+    password: QWEqwe@123
     driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    #数据库索引
+    database: ${REDIS_DB:1}
+    host: ${REDIS_HOST:172.17.251.188}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PWD:qwe123}
+    #连接超时时间
+    timeout: 5000
+
+# 文件存储路径
+file:
+  mac:
+    path: ~/file/examsystem/
+    avatar: ~/avatar/examsystem/
+  linux:
+    path: /home/examsystem/file/
+    avatar: /home/examsystem/avatar/
+  windows:
+    path: C:\examsystem\file\
+    avatar: C:\examsystem\avatar\
+  # 文件大小 /M
+  maxSize: 100
+  avatarMaxSize: 5
+
+elasticsearch:
+  ip: 172.17.251.188
+  port: 9300
+  pool: 5
+  cluster:
+    name: my-application

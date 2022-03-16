@@ -2,6 +2,7 @@ package com.mindskip.xzs.service;
 
 import com.mindskip.xzs.domain.ExamPaper;
 import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperAutoGenRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperEditRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperPageRequestVM;
 import com.mindskip.xzs.viewmodel.student.dashboard.PaperFilter;
@@ -28,4 +29,8 @@ public interface ExamPaperService extends BaseService<ExamPaper> {
     Integer selectAllCount();
 
     List<Integer> selectMothCount();
+
+    ExamPaper savePaperFromAuto(ExamPaperAutoGenRequestVM model, User currentUser);
+
+    ExamPaper get(Integer id);
 }

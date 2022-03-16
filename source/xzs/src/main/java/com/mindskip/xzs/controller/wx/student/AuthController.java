@@ -38,7 +38,7 @@ public class AuthController extends BaseWXApiController {
     }
 
     @RequestMapping(value = "/bind", method = RequestMethod.POST)
-    public RestResponse bind(@Valid BindInfo model) {
+    public RestResponse bind(@RequestBody @Valid BindInfo model) {
         User user = userService.getUserByUserName(model.getUserName());
         if (user == null) {
             return RestResponse.fail(2, "用户名或密码错误");

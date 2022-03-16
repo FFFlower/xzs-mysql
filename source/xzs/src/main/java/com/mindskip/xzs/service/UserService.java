@@ -4,6 +4,7 @@ import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import com.github.pagehelper.PageInfo;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -127,4 +128,8 @@ public interface UserService extends BaseService<User> {
     User selectByWxOpenId(String wxOpenId);
 
     void changePicture(User user, String imagePath);
+
+    void deleteByIdsLogic(Integer[] asList);
+
+    void insertUsersByExcel(List<User> users);
 }

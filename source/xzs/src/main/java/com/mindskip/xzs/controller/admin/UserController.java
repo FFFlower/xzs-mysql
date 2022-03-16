@@ -1,27 +1,33 @@
 package com.mindskip.xzs.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.poi.excel.ExcelReader;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
+import com.mindskip.xzs.configuration.property.FileProperties;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.UserEventLog;
 import com.mindskip.xzs.domain.enums.UserStatusEnum;
+import com.mindskip.xzs.exception.BadRequestException;
 import com.mindskip.xzs.service.AuthenticationService;
 import com.mindskip.xzs.service.UserEventLogService;
 import com.mindskip.xzs.service.UserService;
 import com.mindskip.xzs.utility.DateTimeUtil;
+import com.mindskip.xzs.utility.FileUtil;
 import com.mindskip.xzs.viewmodel.admin.user.*;
 import com.mindskip.xzs.utility.PageInfoHelper;
 import com.github.pagehelper.PageInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.io.File;
+import java.util.*;
 
 
 /**
@@ -34,12 +40,14 @@ public class UserController extends BaseApiController {
     private final UserService userService;
     private final UserEventLogService userEventLogService;
     private final AuthenticationService authenticationService;
+    private final FileProperties properties;
 
     @Autowired
-    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService) {
+    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService, FileProperties properties) {
         this.userService = userService;
         this.userEventLogService = userEventLogService;
         this.authenticationService = authenticationService;
+        this.properties = properties;
     }
 
 
@@ -144,6 +152,12 @@ public class UserController extends BaseApiController {
         return RestResponse.ok();
     }
 
+    @RequestMapping(value = "/batchDelete", method = RequestMethod.POST)
+    public RestResponse delete(@RequestBody Integer[] ids) {
+        userService.deleteByIdsLogic(ids);
+        return RestResponse.ok();
+    }
+
 
     @RequestMapping(value = "/selectByUserName", method = RequestMethod.POST)
     public RestResponse<List<KeyValue>> selectByUserName(@RequestBody String userName) {
@@ -151,4 +165,63 @@ public class UserController extends BaseApiController {
         return RestResponse.ok(keyValues);
     }
 
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public RestResponse importExcel(@RequestParam("level") Integer level,@RequestParam("file") MultipartFile file) {
+        try {
+            readExcel(file, level, getCurrentUser().getId());
+        } catch (BadRequestException bad) {
+            return new RestResponse<>(bad.getStatus(), bad.getMessage());
+        }
+        return RestResponse.ok();
+    }
+
+    public void readExcel(MultipartFile multipartFile, Integer level, Integer userId) {
+        if(ObjectUtil.isNull(level)){
+            throw new BadRequestException("导入失败！参数校验不通过");
+        }
+        FileUtil.checkSize(properties.getMaxSize(), multipartFile.getSize());
+        String suffix = FileUtil.getExtensionName(multipartFile.getOriginalFilename());
+        String type = FileUtil.getFileType(suffix);
+        File file = FileUtil.upload(multipartFile, properties.getPath().getPath() + type +  File.separator);
+        if(ObjectUtil.isNull(file)){
+            throw new BadRequestException("上传失败");
+        }
+        List<User> users = readDataFromExcel(file, level);
+        userService.insertUsersByExcel(users);
+    }
+
+    private List<User> readDataFromExcel(File file,Integer gradeLevel) {
+        List<User> users = new ArrayList<>();
+        if (null == file) {
+            return users;
+        }
+        ExcelReader reader = new ExcelReader(file, 0);
+        List<Map<String,Object>> readAll = reader.readAll();
+        if (CollectionUtils.isEmpty(readAll)){
+            throw new BadRequestException("导入失败！Excel模版有误");
+        }
+        if (!readAll.get(0).containsKey("登录名")||!readAll.get(0).containsKey("密码")||!readAll.get(0).containsKey("姓名")
+                ||!readAll.get(0).containsKey("手机号")) {
+            throw new BadRequestException("导入失败！Excel模版有误");
+        }
+        Date now = new Date();
+        for (Map<String, Object> stringObjectMap : readAll) {
+            User user = new User();
+            user.setDeleted(false);
+            user.setStatus(1);
+            user.setUserLevel(gradeLevel);
+            user.setUserName(stringObjectMap.get("登录名").toString());
+            user.setPassword(stringObjectMap.get("密码").toString());
+            user.setRealName(stringObjectMap.get("姓名").toString());
+            user.setPhone(stringObjectMap.get("手机号").toString());
+            user.setRole(1);
+            String encodePwd = authenticationService.pwdEncode(user.getPassword());
+            user.setPassword(encodePwd);
+            user.setCreateTime(now);
+            user.setLastActiveTime(now);
+            user.setUserUuid(UUID.randomUUID().toString());
+            users.add(user);
+        }
+        return users;
+    }
 }

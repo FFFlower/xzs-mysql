@@ -12,6 +12,8 @@ public interface SubjectService extends BaseService<Subject> {
 
     List<Subject> allSubject();
 
+    List<Subject> list();
+
     Integer levelBySubjectId(Integer id);
 
     PageInfo<Subject> page(SubjectPageRequestVM requestVM);

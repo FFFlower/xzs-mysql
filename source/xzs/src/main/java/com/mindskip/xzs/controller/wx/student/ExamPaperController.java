@@ -4,10 +4,13 @@ import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.controller.wx.BaseWXApiController;
 import com.mindskip.xzs.domain.ExamPaper;
 import com.mindskip.xzs.domain.Subject;
+import com.mindskip.xzs.domain.enums.ExamPaperMethodEnum;
+import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.service.ExamPaperService;
 import com.mindskip.xzs.service.SubjectService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
+import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperAutoGenRequestVM;
 import com.mindskip.xzs.viewmodel.admin.exam.ExamPaperEditRequestVM;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperPageResponseVM;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperPageVM;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 
 @Controller("WXStudentExamController")
@@ -42,7 +46,7 @@ public class ExamPaperController extends BaseWXApiController {
 
 
     @RequestMapping(value = "/pageList", method = RequestMethod.POST)
-    public RestResponse<PageInfo<ExamPaperPageResponseVM>> pageList(@Valid ExamPaperPageVM model) {
+    public RestResponse<PageInfo<ExamPaperPageResponseVM>> pageList(@RequestBody ExamPaperPageVM model) {
         model.setLevelId(getCurrentUser().getUserLevel());
         PageInfo<ExamPaper> pageInfo = examPaperService.studentPage(model);
         PageInfo<ExamPaperPageResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
@@ -53,5 +57,17 @@ public class ExamPaperController extends BaseWXApiController {
             return vm;
         });
         return RestResponse.ok(page);
+    }
+
+    @RequestMapping(value = "/autoGenerate", method = RequestMethod.POST)
+    public RestResponse<ExamPaperAutoGenRequestVM> autoGen(@RequestBody @Valid ExamPaperAutoGenRequestVM model) {
+        model.setPaperType(ExamPaperTypeEnum.IntelligenceTrain.getCode());
+        model.setSetMethod(ExamPaperMethodEnum.Random.getCode());
+        model.setName("智能训练"+DateTimeUtil.dateNoSymbolFormat(new Date())+"-"+getCurrentUser().getRealName());
+        ExamPaper examPaper = examPaperService.savePaperFromAuto(model, getCurrentUser());
+        if (null == examPaper) {
+            return RestResponse.fail(2, "暂无试题，请联系管理员添加");
+        }
+        return RestResponse.ok();
     }
 }
