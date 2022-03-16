@@ -33,3 +33,6 @@
 p{
   display: none;
 }
+.home-pane > view:first-child{
+  border-left: 4px solid #2d8cf0 !important;
+}

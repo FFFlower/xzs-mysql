@@ -1,32 +1,41 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParam" ref="queryForm" :inline="true">
-      <el-form-item label="题目ID：">
-        <el-input v-model="queryParam.id" clearable></el-input>
+<!--      <el-form-item label="题目ID：">-->
+<!--        <el-input v-model="queryParam.id" clearable></el-input>-->
+<!--      </el-form-item>-->
+      <el-form-item label="试卷名称：">
+        <el-input v-model="queryParam.name" clearable></el-input>
       </el-form-item>
-      <el-form-item label="年级：">
-        <el-select v-model="queryParam.level" placeholder="年级" @change="levelChange" clearable>
-          <el-option v-for="item in levelEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
+      <el-form-item label="作业类别：">
+        <el-select v-model="queryParam.level" placeholder="作业类别" @change="levelChange" clearable>
+          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="学科：" >
+      <el-form-item label="准操项目：" >
         <el-select v-model="queryParam.subjectId"  clearable>
           <el-option v-for="item in subjectFilter" :key="item.id" :value="item.id" :label="item.name+' ( '+item.levelName+' )'"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm">查询</el-button>
-        <router-link :to="{path:'/exam/paper/edit'}" class="link-left">
-          <el-button type="primary">添加</el-button>
-        </router-link>
+<!--        <router-link :to="{path:'/exam/paper/edit'}" class="link-left">-->
+<!--          <el-button type="primary">添加</el-button>-->
+<!--        </router-link>-->
+        <el-popover placement="bottom" trigger="click">
+          <el-button type="warning" size="mini" v-for="item in setMethodEnum" :key="item.key"
+                     @click="selectSetMethod(item.key)">{{item.name}}
+          </el-button>
+          <el-button slot="reference" type="primary" class="link-left">添加</el-button>
+        </el-popover>
       </el-form-item>
     </el-form>
     <el-table v-loading="listLoading" :data="tableData" border fit highlight-current-row style="width: 100%">
-      <el-table-column prop="id" label="Id" width="90px"/>
-      <el-table-column prop="subjectId" label="学科" :formatter="subjectFormatter" width="120px" />
+      <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
+      <el-table-column prop="subjectId" label="作业类别" :formatter="subjectFormatter" width="240px" />
       <el-table-column prop="name" label="名称"  />
       <el-table-column prop="createTime" label="创建时间" width="160px"/>
-      <el-table-column  label="操作" align="center"  width="160px">
+      <el-table-column label="操作" align="center"  width="160px">
         <template slot-scope="{row}">
           <el-button size="mini" @click="$router.push({path:'/exam/paper/edit',query:{id:row.id}})" >编辑</el-button>
           <el-button size="mini" type="danger"  @click="deletePaper(row)" class="link-left">删除</el-button>
@@ -35,6 +44,48 @@
     </el-table>
     <pagination v-show="total>0" :total="total" :page.sync="queryParam.pageIndex" :limit.sync="queryParam.pageSize"
                 @pagination="search"/>
+    <el-dialog :visible.sync="autoGeneratePaper.showDialog">
+      <el-form :model="autoGeneratePaper.form" ref="form" :rules="autoGeneratePaper.rules" label-width="100px" v-loading="autoGeneratePaper.formLoading">
+        <el-form-item label="作业类别：" prop="level">
+          <el-select v-model="autoGeneratePaper.form.level" placeholder="作业类别" @change="autoGenerateLevelChange">
+            <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="准操项目：" prop="subjectId">
+          <el-select v-model="autoGeneratePaper.form.subjectId" placeholder="准操项目">
+            <el-option v-for="item in subjectFilter" :key="item.id" :value="item.id"
+                       :label="item.name+' ( '+item.levelName+' )'"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="试卷名称："  prop="name">
+          <el-input v-model="autoGeneratePaper.form.name"/>
+        </el-form-item>
+        <el-form-item label="单选题数：">
+          <div class="block">
+            <el-slider
+              v-model="autoGeneratePaper.form.singleChoiceNum"
+              :step="10"
+              show-input
+              show-stops>
+            </el-slider>
+          </div>
+        </el-form-item>
+        <el-form-item label="判断题数：">
+          <div class="block">
+            <el-slider
+              v-model="autoGeneratePaper.form.judgeNum"
+              :step="10"
+              show-input
+              show-stops>
+            </el-slider>
+          </div>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="autoGeneratePaper.showDialog = false">取 消</el-button>
+          <el-button type="primary" @click="confirmAutoGenerate">确定</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -49,6 +100,7 @@ export default {
     return {
       queryParam: {
         id: null,
+        name: null,
         level: null,
         subjectId: null,
         pageIndex: 1,
@@ -57,12 +109,44 @@ export default {
       subjectFilter: null,
       listLoading: true,
       tableData: [],
-      total: 0
+      total: 0,
+      autoGeneratePaper: {
+        form: {
+          level: null,
+          subjectId: null,
+          setMethod: 1,
+          questionNum: 100,
+          singleChoiceNum: 80,
+          judgeNum: 20,
+          name: ''
+        },
+        formLoading: false,
+        showDialog: false,
+        rules: {
+          level: [
+            { required: true, message: '请选择作业类别', trigger: 'change' }
+          ],
+          subjectId: [
+            { required: true, message: '请选择准操项目', trigger: 'change' }
+          ],
+          name: [
+            { required: true, message: '请输入试卷名称', trigger: 'blur' }
+          ]
+        }
+      }
     }
   },
   created () {
     this.initSubject()
     this.search()
+  },
+  watch: {
+    'autoGeneratePaper.form.singleChoiceNum' (newVal, oldVal) {
+      this.autoGeneratePaper.form.judgeNum = this.autoGeneratePaper.form.questionNum - newVal
+    },
+    'autoGeneratePaper.form.judgeNum' (newVal, oldVal) {
+      this.autoGeneratePaper.form.singleChoiceNum = this.autoGeneratePaper.form.questionNum - newVal
+    }
   },
   methods: {
     submitForm () {
@@ -77,6 +161,40 @@ export default {
         this.total = re.total
         this.queryParam.pageIndex = re.pageNum
         this.listLoading = false
+      })
+    },
+    selectSetMethod (setMethod) {
+      this.autoGeneratePaper.form.setMethod = setMethod
+      if (this.autoGeneratePaper.form.setMethod === 3) {
+        this.$router.push({ path: '/exam/paper/edit' })
+      } else {
+        this.autoGeneratePaper.showDialog = true
+      }
+    },
+    autoGenerateLevelChange () {
+      this.autoGeneratePaper.form.subjectId = null
+      this.subjectFilter = this.subjects.filter(data => data.level === this.autoGeneratePaper.form.level)
+    },
+    confirmAutoGenerate () {
+      let _this = this
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          this.formLoading = true
+          examPaperApi.autoGenerate(this.autoGeneratePaper.form).then(re => {
+            if (re.code === 1) {
+              _this.$message.success(re.message)
+              _this.autoGeneratePaper.showDialog = false
+              _this.submitForm()
+            } else {
+              _this.$message.error(re.message)
+              _this.formLoading = false
+            }
+          }).catch(e => {
+            this.formLoading = false
+          })
+        } else {
+          return false
+        }
       })
     },
     deletePaper (row) {
@@ -97,12 +215,14 @@ export default {
     subjectFormatter  (row, column, cellValue, index) {
       return this.subjectEnumFormat(cellValue)
     },
-    ...mapActions('exam', { initSubject: 'initSubject' })
+    ...mapActions('exam', { initSubject: 'initSubject' }),
+    ...mapActions('tagsView', { delCurrentView: 'delCurrentView' })
   },
   computed: {
     ...mapGetters('enumItem', ['enumFormat']),
     ...mapState('enumItem', {
-      levelEnum: state => state.user.levelEnum
+      setMethodEnum: state => state.exam.examPaper.setMethodEnum,
+      jobCategoryEnum: state => state.user.jobCategoryEnum
     }),
     ...mapGetters('exam', ['subjectEnumFormat']),
     ...mapState('exam', { subjects: state => state.subjects })

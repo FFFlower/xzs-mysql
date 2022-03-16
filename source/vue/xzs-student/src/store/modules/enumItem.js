@@ -9,11 +9,14 @@ const state = {
     message: {
       readTag: [{ key: true, value: 'success' }, { key: false, value: 'warning' }],
       readText: [{ key: true, value: '已读' }, { key: false, value: '未读' }]
-    }
+    },
+    jobCategoryEnum: [{ key: 1, value: '电工作业' }, { key: 2, value: '焊接与热切割作业' }, { key: 3, value: '高处作业' },
+      { key: 4, value: '制冷与空调作业' }, { key: 5, value: '金属非金属矿山安全作业' }, { key: 6, value: '冶金（有色）生产安全作业' },
+      { key: 7, value: '危险化学品安全作业' }, { key: 8, value: '烟花爆竹安全作业' }]
   },
   exam: {
     examPaper: {
-      paperTypeEnum: [{ key: 1, value: '固定试卷' }, { key: 4, value: '时段试卷' }]
+      paperTypeEnum: [{ key: 1, value: '固定试卷' }, { key: 8, value: '训练试卷' }]
     },
     examPaperAnswer: {
       statusEnum: [{ key: 1, value: '待批改' }, { key: 2, value: '完成' }],

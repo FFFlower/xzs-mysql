@@ -13,11 +13,15 @@ const actions = {
   initUserInfo ({ commit }) {
     userApi.getCurrentUser().then(re => {
       commit('setUserInfo', re.response)
+    }).catch(e => {
+      console.log(e)
     })
   },
   getUserMessageInfo ({ commit }) {
     userApi.getMessageCount().then(re => {
       commit('setMessageCount', re.response)
+    }).catch(e => {
+      console.log(e)
     })
   }
 }

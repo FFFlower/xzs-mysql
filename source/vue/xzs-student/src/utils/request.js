@@ -34,7 +34,9 @@ const request = function (loadtip, query) {
       if (loadtip) {
         loading.close()
       }
-      vue.prototype.$message.error(e.message)
+      if (document.getElementsByClassName('el-message--error').length <= 0) {
+        vue.prototype.$message.error(e.message)
+      }
       return Promise.reject(e.message)
     })
 }

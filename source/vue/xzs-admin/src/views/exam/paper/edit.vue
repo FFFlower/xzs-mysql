@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <el-form :model="form" ref="form" label-width="100px" v-loading="formLoading" :rules="rules">
-      <el-form-item label="年级：" prop="level" required>
-        <el-select v-model="form.level" placeholder="年级"  @change="levelChange">
-          <el-option v-for="item in levelEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
+      <el-form-item label="作业类别：" prop="level" required>
+        <el-select v-model="form.level" placeholder="作业类别"  @change="levelChange">
+          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="学科：" prop="subjectId" required>
-        <el-select v-model="form.subjectId" placeholder="学科">
+      <el-form-item label="准操项目：" prop="subjectId" required>
+        <el-select v-model="form.subjectId" placeholder="准操项目">
           <el-option v-for="item in subjectFilter" :key="item.id" :value="item.id"
                      :label="item.name+' ( '+item.levelName+' )'"></el-option>
         </el-select>
@@ -71,7 +71,7 @@
       </el-form>
       <el-table v-loading="questionPage.listLoading" :data="questionPage.tableData"
                 @selection-change="handleSelectionChange" border fit highlight-current-row style="width: 100%">
-        <el-table-column type="selection" width="35"></el-table-column>
+        <el-table-column type="selection" width="40"></el-table-column>
         <el-table-column prop="id" label="Id" width="60px"/>
         <el-table-column prop="questionType" label="题型" :formatter="questionTypeFormatter" width="70px"/>
         <el-table-column prop="shortTitle" label="题干" show-overflow-tooltip/>
@@ -103,6 +103,7 @@ export default {
         id: null,
         level: null,
         subjectId: null,
+        setMethod: 1,
         paperType: 1,
         limitDateTime: [],
         name: '',
@@ -111,12 +112,15 @@ export default {
       },
       subjectFilter: null,
       formLoading: false,
+      paper: {
+        setMethod: 1
+      },
       rules: {
         level: [
-          { required: true, message: '请选择年级', trigger: 'change' }
+          { required: true, message: '请选择作业类别', trigger: 'change' }
         ],
         subjectId: [
-          { required: true, message: '请选择学科', trigger: 'change' }
+          { required: true, message: '请选择准操项目', trigger: 'change' }
         ],
         paperType: [
           { required: true, message: '请选择试卷类型', trigger: 'change' }
@@ -260,7 +264,8 @@ export default {
     ...mapState('enumItem', {
       questionTypeEnum: state => state.exam.question.typeEnum,
       paperTypeEnum: state => state.exam.examPaper.paperTypeEnum,
-      levelEnum: state => state.user.levelEnum
+      setMethodEnum: state => state.exam.examPaper.setMethodEnum,
+      jobCategoryEnum: state => state.user.jobCategoryEnum
     }),
     ...mapState('exam', { subjects: state => state.subjects })
   }

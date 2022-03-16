@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-cloak>
     <el-container  class="app-item-contain">
       <el-main>
         <el-row>
@@ -17,6 +17,9 @@
                   <el-button type="warning" @click="showAnswer">显示答案</el-button>
                   <el-button type="primary" @click="submitAnswer">提交答案</el-button>
                   <el-button type="primary" v-if="canNext" @click="nextQuestion">下一题</el-button>
+                </el-col>
+                <el-col :span="2" :offset="4" style="margin-top: 20px">
+                  <el-button type="info" @click="exitPractice">退出练习</el-button>
                 </el-col>
               </el-row>
             </el-card>
@@ -37,6 +40,14 @@
               <el-row style="padding: 10px;">
                 <el-col :span="8"><span>题目总数：</span></el-col>
                 <el-col :span="12"><span>{{ total }}</span></el-col>
+              </el-row>
+              <el-row style="padding: 10px;">
+                <el-col :span="8"><span>单选题数：</span></el-col>
+                <el-col :span="12"><span>{{ singleCount }}</span></el-col>
+              </el-row>
+              <el-row style="padding: 10px;">
+                <el-col :span="8"><span>判断题数：</span></el-col>
+                <el-col :span="12"><span>{{ judgeCount }}</span></el-col>
               </el-row>
               <el-row style="padding: 10px;">
                 <el-col :span="8"><span>当前进度：</span></el-col>
@@ -67,7 +78,8 @@ export default {
       recordForm: {
         level: 0,
         subjectId: 0,
-        questionId: 0
+        questionId: 0,
+        answer: ''
       },
       questionForm: {
         level: 0,
@@ -84,6 +96,8 @@ export default {
         ]
       },
       total: 0,
+      singleCount: 0,
+      judgeCount: 0,
       remainTotal: 0,
       curQuestionIdx: 0,
       questionList: [],
@@ -105,10 +119,6 @@ export default {
     this.recordForm.subjectId = this.subjectId
     // 初始化总题数
     this.initCount()
-    // 初始化问题
-    this.initQuestion()
-    // 初始化准操项目
-    this.initSubject()
   },
   mounted () {
 
@@ -159,6 +169,14 @@ export default {
       questionApi.page(this.questionForm).then(re => {
         _this.questionList = re.response.list
         _this.remainTotal = re.response.total
+        if (_this.remainTotal === 0) {
+          _this.$alert('已经最后一题了', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+              _this.$router.push({ path: '/index' })
+            }
+          })
+        }
         _this.curQuestionIdx = 0
         _this.formLoading = false
         _this.getQuestion()
@@ -177,13 +195,32 @@ export default {
     initCount () {
       let _this = this
       questionApi.count(this.questionForm).then(re => {
-        _this.total = re.response
+        _this.total = re.response.count
+        _this.singleCount = re.response.singleCount
+        _this.judgeCount = re.response.judgeCount
+        if (_this.total === 0) {
+          this.$alert('暂时无可练习试题，请联系管理员添加', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+              _this.$router.push({ path: '/index' })
+            }
+          })
+        } else {
+          // 初始化问题
+          _this.initQuestion()
+          // 初始化准操项目
+          _this.initSubject()
+        }
       })
+    },
+    exitPractice () {
+      this.$router.push({ path: '/index' })
     },
     submitAnswer () {
       let _this = this
       this.$refs.form.validate((valid) => {
         if (valid) {
+          _this.recordForm.answer = _this.answerItem.content
           questionAnswerApi.record(this.recordForm)
           _this.showResult()
           // _this.nextQuestion()
@@ -217,13 +254,13 @@ export default {
       return this.total - this.remainTotal + this.curQuestionIdx
     },
     doRight () {
-      return this.answerItem.content === this.form.correct ? true : false
+      return this.answerItem.content === this.form.correct
     },
     answerProcess () {
       if (this.total <= 0) {
         return 0
       }
-      return parseInt((this.total - this.remainTotal + this.curQuestionIdx) * 100 / this.total);
+      return parseInt((this.total - this.remainTotal + this.curQuestionIdx) * 100 / this.total)
     }
   }
 }
@@ -245,5 +282,11 @@ export default {
   .question-title-padding {
     padding-left: 25px;
     padding-right: 25px;
+  }
+  .box-card{
+    font-size: 18px;
+  }
+  [v-cloak] {
+    display: none;
   }
 </style>

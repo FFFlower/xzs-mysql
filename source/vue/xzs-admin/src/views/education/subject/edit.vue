@@ -2,12 +2,12 @@
   <div class="app-container">
 
     <el-form :model="form" ref="form" label-width="100px" v-loading="formLoading">
-      <el-form-item label="学科：" required>
+      <el-form-item label="准操项目：" required>
         <el-input v-model="form.name"></el-input>
       </el-form-item>
-      <el-form-item label="年级：" required>
-        <el-select v-model="form.level" placeholder="年级">
-          <el-option v-for="item in levelEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
+      <el-form-item label="作业类别：" required>
+        <el-select v-model="form.level" placeholder="作业类别">
+          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -49,7 +49,7 @@ export default {
     submitForm () {
       let _this = this
       this.formLoading = true
-      this.form.levelName = this.enumFormat(this.levelEnum, this.form.level)
+      this.form.levelName = this.enumFormat(this.jobCategoryEnum, this.form.level)
       subjectApi.edit(this.form).then(data => {
         if (data.code === 1) {
           _this.$message.success(data.message)
@@ -82,7 +82,8 @@ export default {
       'enumFormat'
     ]),
     ...mapState('enumItem', {
-      levelEnum: state => state.user.levelEnum
+      levelEnum: state => state.user.levelEnum,
+      jobCategoryEnum: state => state.user.jobCategoryEnum
     })
   }
 }

@@ -6,7 +6,12 @@
     "i-collapse": "/component/iView/collapse/index",
     "i-collapse-item": "/component/iView/collapse-item/index",
     "i-message": "/component/iView/message/index",
-    "i-spin": "/component/iView/spin/index"
+    "i-spin": "/component/iView/spin/index",
+    "i-grid": "/component/iView/grid/index",
+    "i-grid-item": "/component/iView/grid-item/index",
+    "i-grid-icon": "/component/iView/grid-icon/index",
+    "i-icon": "/component/iView/icon/index",
+    "i-grid-label": "/component/iView/grid-label/index"
   },
   "enablePullDownRefresh": true
 }

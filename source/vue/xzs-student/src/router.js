@@ -1,15 +1,29 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Layout from '@/layout'
+import Layout from '@/layout/index'
+import LayoutHome from '@/layout/home'
 
 Vue.use(Router)
+// 解决报错
+const originalPush = Router.prototype.push
+const originalReplace = Router.prototype.replace
+// push
+Router.prototype.push = function push (location, onResolve, onReject) {
+  if (onResolve || onReject) return originalPush.call(this, location, onResolve, onReject)
+  return originalPush.call(this, location).catch(err => err)
+}
+// replace
+Router.prototype.replace = function push (location, onResolve, onReject) {
+  if (onResolve || onReject) return originalReplace.call(this, location, onResolve, onReject)
+  return originalReplace.call(this, location).catch(err => err)
+}
 const router = new Router({
   routes: [
     { path: '/login', name: 'Login', component: () => import('@/views/login/index'), meta: { title: '登录', bodyBackground: '#fbfbfb' } },
     { path: '/register', name: 'Register', component: () => import('@/views/register/index'), meta: { title: '注册', bodyBackground: '#fbfbfb' } },
     {
       path: '/',
-      component: Layout,
+      component: LayoutHome,
       redirect: '/index',
       children: [
         {
@@ -81,6 +95,8 @@ const router = new Router({
       ]
     },
     { path: '/do', name: 'ExamPaperDo', component: () => import('@/views/exam/paper/do'), meta: { title: '试卷答题' } },
+    { path: '/practice/bank/index', name: 'ExamPaperPractice', component: () => import('@/views/practice/bank/index'), meta: { title: '题库练习' } },
+    { path: '/practice/intelligenceTrain/index', name: 'ExamPaperIntelligenceTrain', component: () => import('@/views/practice/intelligenceTrain/index'), meta: { title: '智能训练' } },
     { path: '/edit', name: 'ExamPaperEdit', component: () => import('@/views/exam/paper/edit'), meta: { title: '试卷批改' } },
     { path: '/read', name: 'ExamPaperRead', component: () => import('@/views/exam/paper/read'), meta: { title: '试卷查看' } },
     { path: '*', component: () => import('@/views/error-page/404'), meta: { title: '404' }
