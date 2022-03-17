@@ -23,23 +23,31 @@ html {
 }
 
 .student-header {
+  display: flex;
+  padding-left: 3%;
+  position: fixed;
+  width: 100%;
+  z-index: 9;
+  background-color: #FFF;
   border-bottom: solid 1px #e6e6e6 !important;
-  padding: 0px !important;
+  //padding: 0px !important;
 
   .el-menu-title {
+    padding: 0 60px;
     border-bottom: 0px !important;
     float: right;
 
     .el-menu-item {
       font-size: 15px !important;
       line-height: 62px !important;
+      color: #252b3a;
     }
   }
 
   .head-user {
     color: #909399;
     float: right;
-    margin: 0px 0px 0px 10px;
+    margin: 0px 0px 0px auto;
 
     .el-dropdown-avatar {
       margin-top: 12px;
@@ -55,7 +63,7 @@ html {
 }
 
 .student-main {
-  padding: 0px !important;
+  padding: 61px 0px 0px 0px !important;
 }
 
 
@@ -88,7 +96,7 @@ html {
 
   .foot-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     padding: 50px;
     flex-wrap: wrap;
   }
@@ -162,7 +170,8 @@ html {
 
 
 .q-title {
-  margin: 5px 5px 0px 5px;
+  margin: 5px 5px 0px 0px;
+  font-size: 20px;
 
   p {
     display: inline !important;
@@ -171,7 +180,7 @@ html {
 
 
 .q-content {
-  margin: 10px 35px 15px 25px;
+  margin: 10px 35px 15px 0;
 
   p {
     display: inline !important;
@@ -207,6 +216,18 @@ html {
 .question-prefix {
   padding-right: 20px;
   font-weight: 600 !important;
+}
+
+.box-card,.question-item-group{
+  .el-radio__label{
+    font-size: 18px !important;
+  }
+}
+
+.exampaper-item-box{
+  .el-card__header{
+    background-color: #EBEEF5;font-size: 20px;font-weight: bold;
+  }
 }
 
 .gapfilling-span {
@@ -326,7 +347,7 @@ html {
 
 .carousel-img {
   display: inline-block;
-  height: 300px;
+  height: 400px;
   width: 100%;
 }
 

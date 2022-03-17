@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <el-form :model="form" ref="form" label-width="100px" v-loading="formLoading"  :rules="rules">
-      <el-form-item label="年级：" prop="gradeLevel" required>
-        <el-select v-model="form.gradeLevel" placeholder="年级"  @change="levelChange">
-          <el-option v-for="item in levelEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
+      <el-form-item label="作业类别：" prop="gradeLevel" required>
+        <el-select v-model="form.gradeLevel" placeholder="作业类别"  @change="levelChange">
+          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="学科：" prop="subjectId" required>
-        <el-select v-model="form.subjectId" placeholder="学科" >
+      <el-form-item label="准操项目：" prop="subjectId" required>
+        <el-select v-model="form.subjectId" placeholder="准操项目" >
           <el-option v-for="item in subjectFilter" :key="item.id" :value="item.id" :label="item.name+' ( '+item.levelName+' )'"></el-option>
         </el-select>
       </el-form-item>
@@ -20,7 +20,7 @@
           <el-input v-model="item.content"   @focus="inputClick(item,'content')"  class="question-item-content-input"/>
         </el-form-item>
       </el-form-item>
-      <el-form-item label="解析：" prop="analyze" required>
+      <el-form-item label="解析：" prop="analyze">
         <el-input v-model="form.analyze"  @focus="inputClick(form,'analyze')" />
       </el-form-item>
       <el-form-item label="分数：" prop="score" required>
@@ -75,10 +75,10 @@ export default {
           { id: null, prefix: 'A', content: '是' },
           { id: null, prefix: 'B', content: '否' }
         ],
-        analyze: '',
+        analyze: '无',
         correct: '',
-        score: '',
-        difficult: 0
+        score: '1',
+        difficult: 1
       },
       subjectFilter: null,
       formLoading: false,
@@ -93,7 +93,7 @@ export default {
           { required: true, message: '请输入题干', trigger: 'blur' }
         ],
         analyze: [
-          { required: true, message: '请输入解析', trigger: 'blur' }
+          // { required: true, message: '请输入解析', trigger: 'blur' }
         ],
         score: [
           { required: true, message: '请输入分数', trigger: 'blur' }
@@ -207,7 +207,7 @@ export default {
     ...mapGetters('enumItem', ['enumFormat']),
     ...mapState('enumItem', {
       questionTypeEnum: state => state.exam.question.typeEnum,
-      levelEnum: state => state.user.levelEnum
+      jobCategoryEnum: state => state.user.jobCategoryEnum
     }),
     ...mapState('exam', { subjects: state => state.subjects })
   }

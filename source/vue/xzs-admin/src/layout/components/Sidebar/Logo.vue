@@ -24,7 +24,7 @@ export default {
   },
   data () {
     return {
-      title: '学之思管理系统'
+      title: '宜科安全生产练习后台'
     }
   }
 }
@@ -54,7 +54,7 @@ export default {
     width: 100%;
 
     & .sidebar-logo {
-      width: 45px;
+      width: 26px;
       vertical-align: middle;
       margin-right: 12px;
     }

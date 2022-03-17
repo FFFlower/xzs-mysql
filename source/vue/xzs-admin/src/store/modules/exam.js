@@ -12,6 +12,14 @@ const getters = {
       }
     }
     return null
+  },
+  subjectEnumSimpleFormat: (state) => (key) => {
+    for (let item of state.subjects) {
+      if (item.id === key) {
+        return item.name
+      }
+    }
+    return null
   }
 }
 

@@ -1,37 +1,44 @@
 <template>
   <div class="lowin  lowin-blue">
     <div class="lowin-brand">
-      <img src="@/assets/logo2.png" alt="logo" style="margin-top: 12px">
+      <img src="@/assets/logo-login.png" alt="logo" style="margin-top: 12px;width: 50px;">
     </div>
     <div class="lowin-wrapper">
       <div class="lowin-box lowin-login">
         <div class="lowin-box-inner">
           <el-form ref="loginForm" :model="loginForm" :rules="loginRules">
-            <p>学之思开源考试系统</p>
+            <p>宜科安全生产考试系统</p>
             <div class="lowin-group">
               <label>用户名 </label>
-              <el-input ref="userName" v-model="loginForm.userName" class="lowin-input" placeholder="用户名" name="userName" type="text" tabindex="1" auto-complete="on"/>
+              <el-input ref="userName" v-model="loginForm.userName" prefix-icon="el-icon-user" class="login-input" placeholder="用户名" name="userName" type="text" tabindex="1" auto-complete="on">
+              </el-input>
             </div>
             <div class="lowin-group password-group">
-              <label>密码 <a href="#" class="forgot-link">忘记密码?</a></label>
-              <el-input  class="lowin-input" :key="passwordType" ref="password" v-model="loginForm.password" :type="passwordType"
+              <label>密码
+<!--                <a href="#" class="forgot-link">忘记密码?</a>-->
+              </label>
+              <el-input  class="login-input" :key="passwordType" prefix-icon="el-icon-unlock" ref="password" v-model="loginForm.password" :type="passwordType"
                 placeholder="密码" name="password" tabindex="2" auto-complete="on" @keyup.native="checkCapslock" @blur="capsTooltip = false" @keyup.enter.native="handleLogin"/>
             </div>
 
-            <el-button :loading="loading" type="text" class="lowin-btn login-btn"  @click.native.prevent="handleLogin">登录</el-button>
+            <el-button :loading="loading" type="primary" class="login-btn"  @click.native.prevent="handleLogin">登录</el-button>
 
-            <div class="text-foot">
-              还没有账号?
-              <router-link to="/register" class="register-link">
-                注册
-              </router-link>
-            </div>
+<!--            <div class="text-foot">-->
+<!--              还没有账号?-->
+<!--              <router-link to="/register" class="register-link">-->
+<!--                注册-->
+<!--              </router-link>-->
+<!--            </div>-->
           </el-form>
         </div>
       </div>
     </div>
     <div class="account-foot-copyright">
-      <span>Copyright © 2021 武汉思维跳跃科技有限公司 版权所有</span>
+<!--      <span>Copyright © 2021 武汉思维跳跃科技有限公司 版权所有</span>-->
+      <a target="_blank" href="https://beian.miit.gov.cn">
+        <img class="footerPubSecIcp_icon" src="//g-0.ss.faisys.com/image/footer/public_security_icon.png" width="20" height="20" alt="备案图标" style="width: 20px; height: 20px;vertical-align: middle;margin-bottom: 2px;">
+        皖ICP备2020014763号
+      </a>
     </div>
   </div>
 </template>
@@ -180,9 +187,9 @@ export default {
   }
 
   .lowin a {
-    color: var(--color-primary);
+    color: #606266;
     text-decoration: none;
-    border-bottom: 1px dashed var(--color-semidark);
+    border-bottom: 1px dashed #606266;
     margin-top: -3px;
     padding-bottom: 2px;
   }
@@ -250,7 +257,7 @@ export default {
   }
 
   .lowin .lowin-box p {
-    color: var(--color-semidark);
+    color: #606266;
     font-weight: 700;
     margin-bottom: 20px;
     text-align: center;
@@ -264,7 +271,7 @@ export default {
     margin-bottom: 5px;
     display: inline-block;
     width: 100%;
-    color: var(--color-semidark);
+    color: #606266;
     font-weight: 700;
   }
 
@@ -281,6 +288,9 @@ export default {
     width: 100%;
     outline: 0;
   }
+  .lowin .lowin-box .login-btn,.lowin .lowin-box .login-input{
+    width: 100%;
+  }
 
   .lowin .lowin-box .lowin-btn {
     display: inline-block;
@@ -290,8 +300,8 @@ export default {
     padding: 15px;
     border-radius: 3px;
     background-color: var(--color-primary);
-    -webkit-box-shadow: 0 2px 7px var(--color-semidark);
-    box-shadow: 0 2px 7px var(--color-semidark);
+    -webkit-box-shadow: 0 2px 7px #606266;
+    box-shadow: 0 2px 7px #606266;
     font-weight: 700;
     outline: 0;
     cursor: pointer;
@@ -314,7 +324,7 @@ export default {
     padding: 10px;
     font-weight: 700;
     margin-top: 20px;
-    color: var(--color-semidark);
+    color: #606266;
   }
 
   /* animation */

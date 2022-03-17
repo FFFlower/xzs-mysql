@@ -5,6 +5,7 @@ import store from './store'
 import 'normalize.css/normalize.css'
 import Element from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
+import 'babel-polyfill'
 
 import '@/styles/index.scss' // global css
 import './icons' // icon
@@ -36,7 +37,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.path) {
     // eslint-disable-next-line no-undef
-    _hmt.push(['_trackPageview', '/#' + to.fullPath])
+    // _hmt.push(['_trackPageview', '/#' + to.fullPath])
   }
   next()
 })

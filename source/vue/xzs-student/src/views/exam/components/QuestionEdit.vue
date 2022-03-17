@@ -1,14 +1,19 @@
 <template>
-  <div style="line-height:1.8">
+  <div style="line-height:1.8;font-size: 20px">
     <div v-if="qType==1" v-loading="qLoading">
-      <div class="q-title" v-html="question.title"/>
+      <div class="q-title">{{question.title}}
+        <el-tag type="success" v-if="showResult && doRight">正确</el-tag>
+        <el-tag type="danger" v-if="showResult && !doRight">错误</el-tag>
+      </div>
       <div class="q-content">
-        <el-radio-group v-model="answer.content" @change="answer.completed = true" >
-          <el-radio  v-for="item in question.items"  :key="item.prefix"  :label="item.prefix" >
+        <el-form-item prop="content">
+        <el-radio-group class="question-item-group" size="medium" v-model="answer.content" @change="answer.completed = true" >
+          <el-radio v-for="item in question.items"  :key="item.prefix"  :label="item.prefix" style="display: block;padding: 5px 0">
             <span class="question-prefix">{{item.prefix}}.</span>
             <span v-html="item.content" class="q-item-span-content"></span>
           </el-radio>
         </el-radio-group>
+        </el-form-item>
       </div>
     </div>
     <div v-else-if="qType==2" v-loading="qLoading">
@@ -23,14 +28,19 @@
       </div>
     </div>
     <div v-else-if="qType==3" v-loading="qLoading">
-      <div class="q-title" v-html="question.title" style="display: inline;margin-right: 10px"/>
-      <span style="padding-right: 10px;">(</span>
+      <div class="q-title">{{question.title}}
+        <el-tag type="success" v-if="showResult && doRight">正确</el-tag>
+        <el-tag type="danger" v-if="showResult && !doRight">错误</el-tag>
+      </div>
+<!--      <span style="padding-right: 10px;">(</span>-->
+      <el-form-item prop="content">
       <el-radio-group v-model="answer.content" @change="answer.completed = true" >
-        <el-radio  v-for="item in question.items"  :key="item.prefix"  :label="item.prefix" >
+        <el-radio  v-for="item in question.items"  :key="item.prefix"  :label="item.prefix" style="display: block;padding: 5px 0">
           <span v-html="item.content" class="q-item-span-content"></span>
         </el-radio>
       </el-radio-group>
-      <span style="padding-left: 10px;">)</span>
+      </el-form-item>
+<!--      <span style="padding-left: 10px;">)</span>-->
     </div>
     <div v-else-if="qType==4" v-loading="qLoading">
       <div class="q-title" v-html="question.title"/>
@@ -75,6 +85,14 @@ export default {
     qType: {
       type: Number,
       default: 0
+    },
+    showResult: {
+      type: Boolean,
+      default: false
+    },
+    doRight: {
+      type: Boolean,
+      default: false
     }
   },
   methods: {

@@ -1,54 +1,61 @@
 <template>
   <div>
-    <el-row  class="do-exam-title">
-      <el-col :span="24">
-        <span :key="item.itemOrder"  v-for="item in answer.answerItems">
-             <el-tag :type="questionCompleted(item.completed)" class="do-exam-title-tag" @click="goAnchor('#question-'+item.itemOrder)">{{item.itemOrder}}</el-tag>
-        </span>
-        <span class="do-exam-time">
-          <label>剩余时间：</label>
-          <label>{{formatSeconds(remainTime)}}</label>
-        </span>
-      </el-col>
-    </el-row>
-    <el-row  class="do-exam-title-hidden">
-      <el-col :span="24">
-        <span :key="item.itemOrder"  v-for="item in answer.answerItems">
-             <el-tag  class="do-exam-title-tag" >{{item.itemOrder}}</el-tag>
-        </span>
-        <span class="do-exam-time">
-          <label>剩余时间：</label>
-        </span>
-      </el-col>
-    </el-row>
-    <el-container  class="app-item-contain">
-      <el-header class="align-center">
-        <h1>{{form.name}}</h1>
-        <div>
-          <span class="question-title-padding">试卷总分：{{form.score}}</span>
-          <span class="question-title-padding">考试时间：{{form.suggestTime}}分钟</span>
-        </div>
-      </el-header>
-      <el-main>
+    <el-row style="margin-top: 40px">
+      <el-col :span="14" :offset="1">
         <el-form :model="form" ref="form" v-loading="formLoading" label-width="100px">
           <el-row :key="index"  v-for="(titleItem,index) in form.titleItems">
-            <h3>{{titleItem.name}}</h3>
+<!--            <h3>{{titleItem.name}}</h3>-->
             <el-card class="exampaper-item-box" v-if="titleItem.questionItems.length!==0">
-              <el-form-item :key="questionItem.itemOrder" :label="questionItem.itemOrder+'.'"
+              <div slot="header">
+                <span>{{titleItem.name}}</span>
+              </div>
+              <el-form-item :key="questionItem.itemOrder"
                             v-for="questionItem in titleItem.questionItems"
                             class="exam-question-item" label-width="50px" :id="'question-'+ questionItem.itemOrder">
+                <span slot="label" style="width: 50px;line-height: 1.8;font-size: 20px !important;margin-top: 4px">
+                  {{questionItem.itemOrder+'.'}}
+                </span>
                 <QuestionEdit :qType="questionItem.questionType" :question="questionItem"
                               :answer="answer.answerItems[questionItem.itemOrder-1]"/>
               </el-form-item>
             </el-card>
           </el-row>
-           <el-row class="do-align-center">
-             <el-button type="primary" @click="submitForm">提交</el-button>
-             <el-button>取消</el-button>
-           </el-row>
+<!--          <el-row class="do-align-center">-->
+<!--            <el-button type="primary" @click="submitForm">提交</el-button>-->
+<!--            <el-button>取消</el-button>-->
+<!--          </el-row>-->
         </el-form>
-      </el-main>
-    </el-container>
+      </el-col>
+      <el-col :span="7" :offset="1">
+        <el-card class="question-card">
+          <el-row>
+            <div style="text-align: center;font-size: 16px;font-weight: bold">{{form.name}}</div>
+          </el-row>
+          <el-divider></el-divider>
+          <el-row>
+            <span class="question-title-padding">总分：{{form.score}}</span>
+            <span class="question-title-padding">时间：{{form.suggestTime}}分钟</span>
+          </el-row>
+          <el-divider content-position="center">答题卡</el-divider>
+          <el-row>
+            <el-col>
+            <span :key="item.itemOrder"  v-for="item in answer.answerItems">
+             <el-tag :type="questionCompleted(item.completed)" class="do-exam-title-tag" @click="goAnchor('#question-'+item.itemOrder)">{{item.itemOrder}}</el-tag>
+            </span>
+            </el-col>
+          </el-row>
+          <el-divider content-position="center">剩余时间</el-divider>
+          <el-row>
+            <div class="remain-time">
+              {{formatSeconds(remainTime)}}
+            </div>
+          </el-row>
+          <el-row class="do-align-center">
+            <el-button type="primary" @click="submitForm">提交试卷</el-button>
+          </el-row>
+        </el-card>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -165,12 +172,30 @@ export default {
     padding: 10px;
 
     .el-form-item__label {
-      font-size: 15px !important;
+      line-height: 1.8;
+      font-size: 20px !important;
     }
   }
 
   .question-title-padding {
     padding-left: 25px;
     padding-right: 25px;
+  }
+  .el-tag{
+    width: 30px;
+    margin: 2px;
+    padding: 0px;
+    text-align: center;
+  }
+  .remain-time{
+    text-align: center;
+    color: #F56C6C;
+  }
+  .question-card{
+    position: fixed;
+    width: 450px;
+  }
+  .el-card__header{
+    background-color: #EBEEF5;font-size: 20px;font-weight: bold;
   }
 </style>

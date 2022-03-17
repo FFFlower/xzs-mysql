@@ -1,8 +1,8 @@
 {
   "name": "xzs-student",
   "version": "3.5.0",
-  "author": "武汉思维跳跃科技有限公司",
-  "description": "学之思开源考试系统",
+  "author": "",
+  "description": "宜科安全生产考试系统",
   "license": "AGPL-3.0",
   "private": true,
   "scripts": {
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "axios": "^0.19.0",
+    "babel-polyfill": "^6.26.0",
     "core-js": "^3.19.0",
     "element-ui": "^2.15.6",
     "js-cookie": "2.2.0",
