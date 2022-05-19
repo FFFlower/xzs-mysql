@@ -2,6 +2,8 @@ package com.mindskip.xzs.viewmodel.admin.exam;
 
 
 
+import com.mindskip.xzs.viewmodel.admin.user.UserResponseVM;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -33,6 +35,10 @@ public class ExamPaperEditRequestVM {
     private List<ExamPaperTitleItemVM> titleItems;
 
     private String score;
+
+    private List<Integer> studentIds;
+
+    private List<UserResponseVM> students;
 
     public Integer getId() {
         return id;
@@ -120,5 +126,21 @@ public class ExamPaperEditRequestVM {
 
     public void setQuestionCount(Integer questionCount) {
         this.questionCount = questionCount;
+    }
+
+    public List<Integer> getStudentIds() {
+        return studentIds;
+    }
+
+    public void setStudentIds(List<Integer> studentIds) {
+        this.studentIds = studentIds;
+    }
+
+    public List<UserResponseVM> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<UserResponseVM> students) {
+        this.students = students;
     }
 }

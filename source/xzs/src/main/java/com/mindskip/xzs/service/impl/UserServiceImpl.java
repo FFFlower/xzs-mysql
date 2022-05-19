@@ -3,18 +3,24 @@ package com.mindskip.xzs.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import com.mindskip.xzs.configuration.property.FileProperties;
+import com.mindskip.xzs.domain.Subject;
+import com.mindskip.xzs.domain.UserSubject;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.exception.BadRequestException;
 import com.mindskip.xzs.exception.BusinessException;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.event.OnRegistrationCompleteEvent;
+import com.mindskip.xzs.repository.SubjectMapper;
 import com.mindskip.xzs.repository.UserMapper;
+import com.mindskip.xzs.repository.UserSubjectMapper;
 import com.mindskip.xzs.service.AuthenticationService;
 import com.mindskip.xzs.service.UserService;
+import com.mindskip.xzs.service.UserSubjectService;
 import com.mindskip.xzs.utility.FileUtil;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mindskip.xzs.viewmodel.admin.user.UserRequestVM;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author 武汉思维跳跃科技有限公司
@@ -36,11 +43,15 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     private final static String CACHE_NAME = "xzs:user";
     private final UserMapper userMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserSubjectService userSubjectService;
+    private final SubjectMapper subjectMapper;
 
     @Autowired
-    public UserServiceImpl(UserMapper userMapper, ApplicationEventPublisher eventPublisher) {
+    public UserServiceImpl(UserMapper userMapper, UserSubjectService userSubjectService, SubjectMapper subjectMapper, ApplicationEventPublisher eventPublisher) {
         super(userMapper);
         this.userMapper = userMapper;
+        this.userSubjectService = userSubjectService;
+        this.subjectMapper = subjectMapper;
         this.eventPublisher = eventPublisher;
     }
 
@@ -183,6 +194,31 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     public void insertUsersByExcel(List<User> users) {
         validateUserName(users);
         this.insertUsers(users);
+    }
+
+    @Override
+    public void updateSubject(Integer userId, List<Integer> subjectIds) {
+        if (null == userId) {
+            return;
+        }
+        userSubjectService.deleteByUserId(userId);
+        List<Subject> subjects = subjectMapper.selectByPrimaryKeys(subjectIds);
+        List<UserSubject> userSubjects = subjects.stream().map(x->{
+            UserSubject userSubject = new UserSubject();
+            userSubject.setUserId(userId);
+            userSubject.setLevelId(x.getLevel());
+            userSubject.setSubjectId(x.getId());
+            return userSubject;
+        }).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(userSubjects)) {
+            return;
+        }
+        userSubjectService.insertBatch(userSubjects);
+    }
+
+    @Override
+    public List<User> userList(UserRequestVM model) {
+        return userMapper.userList(model);
     }
 
     private void validateUserName(List<User> userList) {

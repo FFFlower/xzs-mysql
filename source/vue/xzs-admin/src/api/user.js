@@ -10,5 +10,7 @@ export default {
   changeStatus: id => post('/api/admin/user/changeStatus/' + id),
   deleteUser: id => post('/api/admin/user/delete/' + id),
   batchDelete: data => post('/api/admin/user/batchDelete', data),
-  selectByUserName: query => post('/api/admin/user/selectByUserName', query)
+  updateSubject: data => post('/api/admin/user/updateSubject', data),
+  selectByUserName: query => post('/api/admin/user/selectByUserName', query),
+  list: query => post('/api/admin/user/list', query)
 }

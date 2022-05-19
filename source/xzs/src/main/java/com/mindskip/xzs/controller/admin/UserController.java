@@ -2,14 +2,17 @@ package com.mindskip.xzs.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.poi.excel.ExcelReader;
+import com.google.common.collect.Lists;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.configuration.property.FileProperties;
+import com.mindskip.xzs.domain.UserSubject;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.UserEventLog;
 import com.mindskip.xzs.domain.enums.UserStatusEnum;
 import com.mindskip.xzs.exception.BadRequestException;
+import com.mindskip.xzs.repository.UserSubjectMapper;
 import com.mindskip.xzs.service.AuthenticationService;
 import com.mindskip.xzs.service.UserEventLogService;
 import com.mindskip.xzs.service.UserService;
@@ -28,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -41,20 +45,28 @@ public class UserController extends BaseApiController {
     private final UserEventLogService userEventLogService;
     private final AuthenticationService authenticationService;
     private final FileProperties properties;
+    private final UserSubjectMapper userSubjectMapper;
 
     @Autowired
-    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService, FileProperties properties) {
+    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService, FileProperties properties, UserSubjectMapper userSubjectMapper) {
         this.userService = userService;
         this.userEventLogService = userEventLogService;
         this.authenticationService = authenticationService;
         this.properties = properties;
+        this.userSubjectMapper = userSubjectMapper;
     }
 
 
     @RequestMapping(value = "/page/list", method = RequestMethod.POST)
     public RestResponse<PageInfo<UserResponseVM>> pageList(@RequestBody UserPageRequestVM model) {
         PageInfo<User> pageInfo = userService.userPage(model);
-        PageInfo<UserResponseVM> page = PageInfoHelper.copyMap(pageInfo, d -> UserResponseVM.from(d));
+        PageInfo<UserResponseVM> page = PageInfoHelper.copyMap(pageInfo, d -> {
+            UserResponseVM vm = UserResponseVM.from(d);
+            List<UserSubject> list = userSubjectMapper.findByUserId(d.getId());
+            vm.setSubjectIds(list.stream().map(x->x.getSubjectId()).collect(Collectors.toList()));
+            vm.setLevelSubjectIds(list.stream().map(x->String.valueOf(x.getLevelId())+'-'+x.getSubjectId()).collect(Collectors.toList()));
+            return vm;
+        });
         return RestResponse.ok(page);
     }
 
@@ -70,6 +82,22 @@ public class UserController extends BaseApiController {
         return RestResponse.ok(page);
     }
 
+    @RequestMapping(value = "/list", method = RequestMethod.POST)
+    public RestResponse<List<UserResponseVM>> pageList(@RequestBody UserRequestVM requestVM) {
+        requestVM.setRole(1);
+        Integer subjectId = requestVM.getSubjectId();
+        if (null == subjectId || subjectId <= 0) {
+            return RestResponse.ok(Lists.newArrayList());
+        }
+        List<User> list = userService.userList(requestVM);
+        UserSubject condition = new UserSubject();
+        condition.setSubjectId(subjectId);
+        List<UserSubject> userSubjects = userSubjectMapper.findByCondition(condition);
+        list = list.stream().filter(x -> userSubjects.stream().anyMatch(y -> x.getId().equals(y.getUserId()))).collect(Collectors.toList());
+        List<UserResponseVM> result = CollectionUtils.isEmpty(list) ? new ArrayList<>() : list.stream().map(x -> UserResponseVM.from(x)).collect(Collectors.toList());
+        return RestResponse.ok(result);
+    }
+
     @RequestMapping(value = "/select/{id}", method = RequestMethod.POST)
     public RestResponse<UserResponseVM> select(@PathVariable Integer id) {
         User user = userService.getUserById(id);
@@ -82,6 +110,12 @@ public class UserController extends BaseApiController {
         User user = getCurrentUser();
         UserResponseVM userVm = UserResponseVM.from(user);
         return RestResponse.ok(userVm);
+    }
+
+    @RequestMapping(value = "/updateSubject", method = RequestMethod.POST)
+    public RestResponse<User> updateSubject(@RequestBody UserSubjectUpdateVM vm) {
+        userService.updateSubject(vm.getUserId(), vm.getSubjectIds());
+        return RestResponse.ok();
     }
 
 

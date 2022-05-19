@@ -1,7 +1,7 @@
 package com.mindskip.xzs.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
-import com.mindskip.xzs.domain.TextContent;
+import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.domain.enums.ExamPaperMethodEnum;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.domain.enums.QuestionTypeEnum;
@@ -10,11 +10,9 @@ import com.mindskip.xzs.domain.exam.ExamPaperTitleItemObject;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.repository.BaseMapper;
 import com.mindskip.xzs.repository.ExamPaperMapper;
+import com.mindskip.xzs.repository.ExamPaperUserMapper;
 import com.mindskip.xzs.repository.QuestionMapper;
-import com.mindskip.xzs.service.ExamPaperService;
-import com.mindskip.xzs.service.QuestionService;
-import com.mindskip.xzs.service.SubjectService;
-import com.mindskip.xzs.service.TextContentService;
+import com.mindskip.xzs.service.*;
 import com.mindskip.xzs.service.enums.ActionEnum;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.JsonUtil;
@@ -23,14 +21,12 @@ import com.mindskip.xzs.utility.ExamUtil;
 import com.mindskip.xzs.viewmodel.admin.exam.*;
 import com.mindskip.xzs.viewmodel.admin.question.QuestionEditRequestVM;
 import com.mindskip.xzs.viewmodel.admin.question.QuestionListRequestVM;
+import com.mindskip.xzs.viewmodel.admin.user.UserResponseVM;
 import com.mindskip.xzs.viewmodel.student.dashboard.PaperFilter;
 import com.mindskip.xzs.viewmodel.student.dashboard.PaperInfo;
 import com.mindskip.xzs.viewmodel.student.exam.ExamPaperPageVM;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.mindskip.xzs.domain.ExamPaper;
-import com.mindskip.xzs.domain.Question;
-import com.mindskip.xzs.domain.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -57,15 +53,19 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
     private final TextContentService textContentService;
     private final QuestionService questionService;
     private final SubjectService subjectService;
+    private final ExamPaperUserService examPaperUserService;
+    private final UserService userService;
 
     @Autowired
-    public ExamPaperServiceImpl(ExamPaperMapper examPaperMapper, QuestionMapper questionMapper, TextContentService textContentService, QuestionService questionService, SubjectService subjectService) {
+    public ExamPaperServiceImpl(ExamPaperMapper examPaperMapper, QuestionMapper questionMapper, TextContentService textContentService, QuestionService questionService, SubjectService subjectService,ExamPaperUserService examPaperUserService,UserService userService) {
         super(examPaperMapper);
         this.examPaperMapper = examPaperMapper;
         this.questionMapper = questionMapper;
         this.textContentService = textContentService;
         this.questionService = questionService;
         this.subjectService = subjectService;
+        this.examPaperUserService = examPaperUserService;
+        this.userService = userService;
     }
 
 
@@ -97,7 +97,6 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
         List<ExamPaperTitleItemVM> titleItemsVM = examPaperEditRequestVM.getTitleItems();
         List<ExamPaperTitleItemObject> frameTextContentList = frameTextContentFromVM(titleItemsVM);
         String frameTextContentStr = JsonUtil.toJsonStr(frameTextContentList);
-
         ExamPaper examPaper;
         if (actionEnum == ActionEnum.ADD) {
             examPaper = modelMapper.map(examPaperEditRequestVM, ExamPaper.class);
@@ -110,6 +109,7 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
             examPaperFromVM(examPaperEditRequestVM, examPaper, titleItemsVM);
             examPaperMapper.insertSelective(examPaper);
         } else {
+            examPaperUserService.deleteByPaperId(examPaperEditRequestVM.getId());
             examPaper = examPaperMapper.selectByPrimaryKey(examPaperEditRequestVM.getId());
             TextContent frameTextContent = textContentService.selectById(examPaper.getFrameTextContentId());
             frameTextContent.setContent(frameTextContentStr);
@@ -117,6 +117,17 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
             modelMapper.map(examPaperEditRequestVM, examPaper);
             examPaperFromVM(examPaperEditRequestVM, examPaper, titleItemsVM);
             examPaperMapper.updateByPrimaryKeySelective(examPaper);
+        }
+        if (!CollectionUtils.isEmpty(examPaperEditRequestVM.getStudentIds())) {
+            List<ExamPaperUser> examPaperUserList = new ArrayList<>();
+            ExamPaperUser examPaperUser;
+            for (Integer studentId : examPaperEditRequestVM.getStudentIds()) {
+                examPaperUser = new ExamPaperUser();
+                examPaperUser.setExamPaperId(examPaper.getId());
+                examPaperUser.setUserId(studentId);
+                examPaperUserList.add(examPaperUser);
+            }
+            examPaperUserService.insertBatch(examPaperUserList);
         }
         return examPaper;
     }
@@ -150,6 +161,9 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
             List<String> limitDateTime = Arrays.asList(DateTimeUtil.dateFormat(examPaper.getLimitStartTime()), DateTimeUtil.dateFormat(examPaper.getLimitEndTime()));
             vm.setLimitDateTime(limitDateTime);
         }
+        List<Integer> studentIds = examPaperUserService.findByPaperId(vm.getId()).stream().map(x -> x.getUserId()).collect(Collectors.toList());
+        vm.setStudentIds(studentIds);
+        vm.setStudents(userService.selectByIds(studentIds).stream().map(x-> UserResponseVM.from(x)).collect(Collectors.toList()));
         return vm;
     }
 
@@ -185,6 +199,7 @@ public class ExamPaperServiceImpl extends BaseServiceImpl<ExamPaper> implements 
         examPaperVM.setLevel(model.getLevel());
         examPaperVM.setSubjectId(model.getSubjectId());
         examPaperVM.setName(model.getName());
+        examPaperVM.setStudentIds(model.getStudentIds());
         examPaperVM.setPaperType(!StringUtils.isEmpty(model.getPaperType()) ? model.getPaperType() : ExamPaperTypeEnum.Fixed.getCode());
         examPaperVM.setSuggestTime(100);
         List<ExamPaperTitleItemVM> titleItemVMS = selectQuestion(model);

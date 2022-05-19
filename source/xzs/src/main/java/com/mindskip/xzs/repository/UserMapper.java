@@ -3,6 +3,7 @@ package com.mindskip.xzs.repository;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
+import com.mindskip.xzs.viewmodel.admin.user.UserRequestVM;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -147,4 +148,6 @@ public interface UserMapper extends BaseMapper<User> {
     User selectByWxOpenId(@Param("wxOpenId") String wxOpenId);
 
     void deleteByIdsLogic(@Param("ids") Integer[] ids);
+
+    List<User> userList(UserRequestVM model);
 }

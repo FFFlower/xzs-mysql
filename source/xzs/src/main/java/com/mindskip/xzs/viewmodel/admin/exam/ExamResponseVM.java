@@ -1,7 +1,9 @@
 package com.mindskip.xzs.viewmodel.admin.exam;
 
 
+import com.mindskip.xzs.viewmodel.admin.user.UserResponseVM;
 
+import java.util.List;
 
 public class ExamResponseVM {
     private Integer id;
@@ -21,6 +23,8 @@ public class ExamResponseVM {
     private Integer paperType;
 
     private Integer frameTextContentId;
+
+    private List<UserResponseVM> students;
 
     public Integer getId() {
         return id;
@@ -92,5 +96,13 @@ public class ExamResponseVM {
 
     public void setFrameTextContentId(Integer frameTextContentId) {
         this.frameTextContentId = frameTextContentId;
+    }
+
+    public List<UserResponseVM> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<UserResponseVM> students) {
+        this.students = students;
     }
 }

@@ -25,11 +25,11 @@
       <el-form-item label="手机：">
         <el-input v-model="form.phone"></el-input>
       </el-form-item>
-      <el-form-item label="作业类别：" prop="userLevel" required>
-        <el-select v-model="form.userLevel" placeholder="作业类别">
-          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
-        </el-select>
-      </el-form-item>
+<!--      <el-form-item label="作业类别：" prop="userLevel" required>-->
+<!--        <el-select v-model="form.userLevel" placeholder="作业类别">-->
+<!--          <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>-->
+<!--        </el-select>-->
+<!--      </el-form-item>-->
       <el-form-item label="状态：" required>
         <el-select v-model="form.status" placeholder="状态">
           <el-option v-for="item in statusEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
@@ -60,8 +60,8 @@ export default {
         age: '',
         sex: '',
         birthDay: null,
-        phone: null,
-        userLevel: null
+        phone: null
+        // userLevel: null
       },
       formLoading: false,
       rules: {
@@ -70,10 +70,11 @@ export default {
         ],
         realName: [
           { required: true, message: '请输入真实姓名', trigger: 'blur' }
-        ],
-        userLevel: [
-          { required: true, message: '请选择作业类别', trigger: 'change' }
         ]
+        // ,
+        // userLevel: [
+        //   { required: true, message: '请选择作业类别', trigger: 'change' }
+        // ]
       }
     }
   },

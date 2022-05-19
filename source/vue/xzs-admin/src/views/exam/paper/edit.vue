@@ -25,6 +25,14 @@
       <el-form-item label="试卷名称："  prop="name" required>
         <el-input v-model="form.name"/>
       </el-form-item>
+      <el-form-item label="答题学员：">
+        <el-select v-model="form.studentIds" multiple filterable remote reserve-keyword class="max"
+                   placeholder="请输入学员用户名"
+                   :remote-method="getUserByUserName"
+                   :loading="selectLoading">
+          <el-option v-for="item in studentList" :key="item.id" :label="item.realName" :value="item.id"/>
+        </el-select>
+      </el-form-item>
       <el-form-item :key="index" :label="'标题'+(index+1)+'：'" required v-for="(titleItem,index) in form.titleItems">
         <el-input v-model="titleItem.name" style="width: 80%"/>
         <el-button type="text" class="link-left" style="margin-left: 20px" size="mini" @click="addQuestion(titleItem)">
@@ -94,6 +102,7 @@ import Pagination from '@/components/Pagination'
 import QuestionShow from '../question/components/Show'
 import examPaperApi from '@/api/examPaper'
 import questionApi from '@/api/question'
+import userApi from '@/api/user'
 
 export default {
   components: { Pagination, QuestionShow },
@@ -108,7 +117,8 @@ export default {
         limitDateTime: [],
         name: '',
         suggestTime: null,
-        titleItems: []
+        titleItems: [],
+        studentIds: []
       },
       subjectFilter: null,
       formLoading: false,
@@ -146,7 +156,9 @@ export default {
         tableData: [],
         total: 0
       },
-      currentTitleItem: null
+      currentTitleItem: null,
+      studentList: [],
+      selectLoading: false
     }
   },
   created () {
@@ -158,12 +170,29 @@ export default {
     if (id && parseInt(id) !== 0) {
       _this.formLoading = true
       examPaperApi.select(id).then(re => {
+        _this.studentList = re.response.students
         _this.form = re.response
         _this.formLoading = false
       })
     }
   },
   methods: {
+    getUserByUserName (query) {
+      let _this = this
+      if (query !== '') {
+        let queryParam = {
+          keyWord: query,
+          subjectId: this.form.subjectId
+        }
+        _this.selectLoading = true
+        userApi.list(queryParam).then(re => {
+          _this.selectLoading = false
+          _this.studentList = re.response
+        })
+      } else {
+        _this.studentList = []
+      }
+    },
     submitForm () {
       let _this = this
       this.$refs.form.validate((valid) => {

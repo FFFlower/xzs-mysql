@@ -4,6 +4,7 @@ import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.viewmodel.admin.user.UserPageRequestVM;
 import com.github.pagehelper.PageInfo;
+import com.mindskip.xzs.viewmodel.admin.user.UserRequestVM;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -132,4 +133,8 @@ public interface UserService extends BaseService<User> {
     void deleteByIdsLogic(Integer[] asList);
 
     void insertUsersByExcel(List<User> users);
+
+    void updateSubject(Integer userId, List<Integer> subjectIds);
+
+    List<User> userList(UserRequestVM model);
 }

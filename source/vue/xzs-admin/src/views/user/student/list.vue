@@ -13,40 +13,66 @@
         <el-button type="primary" @click="excelImport.dialog = true">Excel导入</el-button>
       </el-form-item>
     </el-form>
-
-    <el-table v-loading="listLoading" :data="tableData" border fit highlight-current-row style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="40"></el-table-column>
-      <el-table-column prop="id" label="Id" />
-      <el-table-column prop="userName" label="用户名"/>
-      <el-table-column prop="realName" label="真实姓名" />
-      <el-table-column prop="userLevel" label="作业类别"  :formatter="levelFormatter"/>
-      <el-table-column prop="sex" label="性别" width="60px;" :formatter="sexFormatter"/>
-      <el-table-column prop="phone" label="手机号"/>
-      <el-table-column prop="createTime" label="创建时间" width="160px"/>
-      <el-table-column label="状态" prop="status" width="70px">
-        <template slot-scope="{row}">
-          <el-tag :type="statusTagFormatter(row.status)">
-            {{ statusFormatter(row.status) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column width="270px" label="操作" align="center">
-        <template slot-scope="{row}">
-          <el-button size="mini"  @click="changeStatus(row)" class="link-left">
-            {{ statusBtnFormatter(row.status) }}
-          </el-button>
-          <router-link :to="{path:'/user/student/edit', query:{id:row.id}}" class="link-left">
-            <el-button size="mini" >编辑</el-button>
-          </router-link>
-          <router-link :to="{path:'/log/user/list', query:{userId:row.id}}" class="link-left">
-            <el-button size="mini" >日志</el-button>
-          </router-link>
-          <el-button  size="mini" type="danger" @click="deleteUser(row)" class="link-left">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <pagination v-show="total>0" :total="total" :page.sync="queryParam.pageIndex" :limit.sync="queryParam.pageSize"
-                @pagination="search"/>
+    <div>
+      <el-row :gutter="5">
+        <el-col :span="18">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>用户列表</span>
+            </div>
+            <el-table v-loading="listLoading" :data="tableData" border fit highlight-current-row style="width: 100%" @row-click="selectRow" @selection-change="handleSelectionChange">
+              <el-table-column type="selection" width="40"></el-table-column>
+              <el-table-column prop="userName" label="用户名"/>
+              <el-table-column prop="realName" label="真实姓名" />
+<!--              <el-table-column prop="userLevel" label="作业类别"  :formatter="levelFormatter"/>-->
+<!--              <el-table-column prop="sex" label="性别" width="60px;" :formatter="sexFormatter"/>-->
+              <el-table-column prop="createTime" label="创建时间" width="160px"/>
+              <el-table-column label="状态" prop="status" width="70px">
+                <template slot-scope="{row}">
+                  <el-tag :type="statusTagFormatter(row.status)">
+                    {{ statusFormatter(row.status) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column width="270px" label="操作" align="center">
+                <template slot-scope="{row}">
+                  <el-button size="mini"  @click="changeStatus(row)" class="link-left">
+                    {{ statusBtnFormatter(row.status) }}
+                  </el-button>
+                  <router-link :to="{path:'/user/student/edit', query:{id:row.id}}" class="link-left">
+                    <el-button size="mini" >编辑</el-button>
+                  </router-link>
+                  <router-link :to="{path:'/log/user/list', query:{userId:row.id}}" class="link-left">
+                    <el-button size="mini" >日志</el-button>
+                  </router-link>
+                  <el-button  size="mini" type="danger" @click="deleteUser(row)" class="link-left">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <pagination v-show="total>0" :total="total" :page.sync="queryParam.pageIndex" :limit.sync="queryParam.pageSize"
+                        @pagination="search"/>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>专业分配</span>
+              <el-button style="float: right; padding: 5px 7px" icon="el-icon-check" size="mini" type="primary" @click="updateSubject">保存</el-button>
+            </div>
+            <el-tree
+              :data="subjectData"
+              show-checkbox
+              default-expand-all
+              node-key="nid"
+              ref="tree"
+              :default-checked-keys="selectRowData.levelSubjectIds"
+              highlight-current
+              :props="subjectProps">
+            </el-tree>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
     <el-dialog :visible.sync="excelImport.dialog" @closed="importDialogClosed" style="width: 100%;height: 100%">
       <el-form :model="excelImport.form" ref="form" :rules="excelImport.rules" label-width="100px" v-loading="excelImport.formLoading">
         <el-form-item label="作业类别：" prop="level">
@@ -86,7 +112,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapActions, mapGetters, mapState } from 'vuex'
 import Pagination from '@/components/Pagination'
 import userApi from '@/api/user'
 
@@ -104,6 +130,9 @@ export default {
       tableData: [],
       tableSelectData: [],
       total: 0,
+      selectRowData: {
+        levelSubjectIds: []
+      },
       excelImport: {
         dialog: false,
         formLoading: false,
@@ -116,11 +145,23 @@ export default {
             { required: true, message: '请选择作业类别', trigger: 'change' }
           ]
         }
+      },
+      subjectData: [],
+      subjectProps: {
+        children: 'children',
+        label: 'label'
       }
     }
   },
   created () {
+    this.initSubject()
     this.search()
+  },
+  watch: {
+    subjects: function (val1, val2) {
+      this.subjectData = this.jobCategoryEnum.map(
+        x => { return { nid: x.key, id: x.key, label: x.value, children: val1.filter(y => y.level === x.key).map(y => { return { nid: x.key + '-' + y.id, id: y.id, label: y.name } }) } })
+    }
   },
   methods: {
     search () {
@@ -169,6 +210,23 @@ export default {
     },
     handleSelectionChange (val) {
       this.tableSelectData = val
+    },
+    selectRow (row, column, event) {
+      this.selectRowData = row
+      this.$refs.tree.setCheckedKeys(row.levelSubjectIds, true)
+    },
+    updateSubject () {
+      if (this.selectRowData) {
+        let _this = this
+        userApi.updateSubject({ userId: this.selectRowData.id, subjectIds: this.$refs.tree.getCheckedNodes().filter(x => !x.hasOwnProperty('children')).map(x => x.id) }).then(re => {
+          if (re.code === 1) {
+            _this.search()
+            _this.$message.success(re.message)
+          } else {
+            _this.$message.error(re.message)
+          }
+        })
+      }
     },
     submitForm () {
       this.queryParam.pageIndex = 1
@@ -224,7 +282,8 @@ export default {
           this.$refs.upload.submit()
         }
       })
-    }
+    },
+    ...mapActions('exam', { initSubject: 'initSubject' })
   },
   computed: {
     ...mapGetters('enumItem', [
@@ -236,7 +295,8 @@ export default {
       statusTag: state => state.user.statusTag,
       statusBtn: state => state.user.statusBtn,
       jobCategoryEnum: state => state.user.jobCategoryEnum
-    })
+    }),
+    ...mapState('exam', { subjects: state => state.subjects })
   }
 }
 </script>

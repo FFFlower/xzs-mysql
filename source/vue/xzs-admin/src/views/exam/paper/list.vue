@@ -33,7 +33,8 @@
     <el-table v-loading="listLoading" :data="tableData" border fit highlight-current-row style="width: 100%">
       <el-table-column type="index" width="50" label="序号" align="center"></el-table-column>
       <el-table-column prop="subjectId" label="作业类别" :formatter="subjectFormatter" width="240px" />
-      <el-table-column prop="name" label="名称"  />
+      <el-table-column prop="name" label="名称" width="160px"  />
+      <el-table-column prop="students" label="答题学员" :formatter="studentFormatter" />
       <el-table-column prop="createTime" label="创建时间" width="160px"/>
       <el-table-column label="操作" align="center"  width="160px">
         <template slot-scope="{row}">
@@ -80,6 +81,14 @@
             </el-slider>
           </div>
         </el-form-item>
+        <el-form-item label="答题学员：">
+          <el-select v-model="autoGeneratePaper.form.studentIds" multiple filterable remote reserve-keyword class="max"
+                     placeholder="请输入学员用户名或姓名添加"
+                     :remote-method="getUserByUserName"
+                     :loading="selectLoading">
+            <el-option v-for="item in studentList" :key="item.id" :label="item.realName" :value="item.id"/>
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button @click="autoGeneratePaper.showDialog = false">取 消</el-button>
           <el-button type="primary" @click="confirmAutoGenerate">确定</el-button>
@@ -93,6 +102,7 @@
 import { mapGetters, mapState, mapActions } from 'vuex'
 import Pagination from '@/components/Pagination'
 import examPaperApi from '@/api/examPaper'
+import userApi from '@/api/user'
 
 export default {
   components: { Pagination },
@@ -118,7 +128,8 @@ export default {
           questionNum: 100,
           singleChoiceNum: 80,
           judgeNum: 20,
-          name: ''
+          name: '',
+          studentIds: []
         },
         formLoading: false,
         showDialog: false,
@@ -133,7 +144,9 @@ export default {
             { required: true, message: '请输入试卷名称', trigger: 'blur' }
           ]
         }
-      }
+      },
+      studentList: [],
+      selectLoading: false
     }
   },
   created () {
@@ -152,6 +165,26 @@ export default {
     submitForm () {
       this.queryParam.pageIndex = 1
       this.search()
+    },
+    getUserByUserName (query) {
+      let _this = this
+      if (query !== '') {
+        if (!this.autoGeneratePaper.form.subjectId) {
+          _this.$message.warning('尚未选择准操项目～')
+          return
+        }
+        let queryParam = {
+          keyWord: query,
+          subjectId: this.autoGeneratePaper.form.subjectId
+        }
+        _this.selectLoading = true
+        userApi.list(queryParam).then(re => {
+          _this.selectLoading = false
+          _this.studentList = re.response
+        })
+      } else {
+        _this.studentList = []
+      }
     },
     search () {
       this.listLoading = true
@@ -179,7 +212,7 @@ export default {
       let _this = this
       this.$refs.form.validate((valid) => {
         if (valid) {
-          this.formLoading = true
+          this.autoGeneratePaper.formLoading = true
           examPaperApi.autoGenerate(this.autoGeneratePaper.form).then(re => {
             if (re.code === 1) {
               _this.$message.success(re.message)
@@ -187,10 +220,10 @@ export default {
               _this.submitForm()
             } else {
               _this.$message.error(re.message)
-              _this.formLoading = false
+              _this.autoGeneratePaper.formLoading = false
             }
           }).catch(e => {
-            this.formLoading = false
+            this.autoGeneratePaper.formLoading = false
           })
         } else {
           return false
@@ -214,6 +247,9 @@ export default {
     },
     subjectFormatter  (row, column, cellValue, index) {
       return this.subjectEnumFormat(cellValue)
+    },
+    studentFormatter (row, column, cellValue, index) {
+      return cellValue.map(x => x.realName).join(',')
     },
     ...mapActions('exam', { initSubject: 'initSubject' }),
     ...mapActions('tagsView', { delCurrentView: 'delCurrentView' })

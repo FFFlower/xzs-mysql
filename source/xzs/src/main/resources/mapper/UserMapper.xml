@@ -387,10 +387,15 @@
 
   <delete id="deleteUsersByIds">
     delete from t_user where id in
-    <foreach item="id" collection="list" open="(" separator=","
-             close=")">
-      #{id}
-    </foreach>
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
   </delete>
 
   <update id="deleteByIdsLogic">
@@ -419,10 +424,15 @@
     <include refid="Base_Column_List" />
      from t_user
      where id in
-    <foreach item="id" collection="list" open="(" separator=","
-             close=")">
-      #{id}
-    </foreach>
+    <choose>
+      <when test="list != null and list.size >0">
+        <foreach item="id" collection="list" open="(" separator=","
+                 close=")">
+          #{id}
+        </foreach>
+      </when>
+      <otherwise>(-1)</otherwise>
+    </choose>
   </select>
 
 
@@ -434,5 +444,28 @@
     limit 1
   </select>
 
+  <select id="userList" resultMap="BaseResultMap" resultType="com.mindskip.xzs.viewmodel.admin.user.UserRequestVM">
+    SELECT
+    <include refid="Base_Column_List" />
+    from t_user
+    <where>
+      and deleted=0
+      <if test="userName != null and userName != ''">
+        and user_name like concat('%',#{userName},'%')
+      </if>
+      <if test="realName != null and realName != ''">
+        and real_name like concat('%',#{realName},'%')
+      </if>
+      <if test="phone != null and phone != ''">
+        and phone like concat('%',#{phone},'%')
+      </if>
+      <if test="keyWord != null and keyWord != ''">
+        and (user_name like concat('%',#{keyWord},'%') or real_name like concat('%',#{keyWord},'%') or phone like concat('%',#{keyWord},'%'))
+      </if>
+      <if test="role != null ">
+        and role= #{role}
+      </if>
+    </where>
+  </select>
 
 </mapper>

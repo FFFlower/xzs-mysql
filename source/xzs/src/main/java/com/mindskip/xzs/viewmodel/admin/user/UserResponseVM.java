@@ -4,6 +4,8 @@ import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.viewmodel.BaseVM;
 
+import java.util.List;
+
 
 /**
  * @author 武汉思维跳跃科技有限公司
@@ -41,6 +43,10 @@ public class UserResponseVM extends BaseVM {
     private Integer userLevel;
 
     private String imagePath;
+
+    private List<Integer> subjectIds;
+
+    private List<String> levelSubjectIds;
 
     public static UserResponseVM from(User user) {
         UserResponseVM vm = modelMapper.map(user, UserResponseVM.class);
@@ -169,5 +175,21 @@ public class UserResponseVM extends BaseVM {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public List<Integer> getSubjectIds() {
+        return subjectIds;
+    }
+
+    public void setSubjectIds(List<Integer> subjectIds) {
+        this.subjectIds = subjectIds;
+    }
+
+    public List<String> getLevelSubjectIds() {
+        return levelSubjectIds;
+    }
+
+    public void setLevelSubjectIds(List<String> levelSubjectIds) {
+        this.levelSubjectIds = levelSubjectIds;
     }
 }
