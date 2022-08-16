@@ -2,17 +2,11 @@ package com.mindskip.xzs.controller.wx.student;
 
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.controller.wx.BaseWXApiController;
-import com.mindskip.xzs.domain.Message;
-import com.mindskip.xzs.domain.MessageUser;
-import com.mindskip.xzs.domain.User;
-import com.mindskip.xzs.domain.UserEventLog;
+import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.domain.enums.RoleEnum;
 import com.mindskip.xzs.domain.enums.UserStatusEnum;
 import com.mindskip.xzs.event.UserEvent;
-import com.mindskip.xzs.service.AuthenticationService;
-import com.mindskip.xzs.service.MessageService;
-import com.mindskip.xzs.service.UserEventLogService;
-import com.mindskip.xzs.service.UserService;
+import com.mindskip.xzs.service.*;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
 import com.mindskip.xzs.viewmodel.student.user.*;
@@ -43,20 +37,28 @@ public class UserController extends BaseWXApiController {
     private final MessageService messageService;
     private final AuthenticationService authenticationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final UserSubjectService userSubjectService;
+    private final SubjectService subjectService;
 
     @Autowired
-    public UserController(UserService userService, UserEventLogService userEventLogService, MessageService messageService, AuthenticationService authenticationService, ApplicationEventPublisher eventPublisher) {
+    public UserController(UserService userService, UserEventLogService userEventLogService, MessageService messageService, AuthenticationService authenticationService, ApplicationEventPublisher eventPublisher, UserSubjectService userSubjectService, SubjectService subjectService) {
         this.userService = userService;
         this.userEventLogService = userEventLogService;
         this.messageService = messageService;
         this.authenticationService = authenticationService;
         this.eventPublisher = eventPublisher;
+        this.userSubjectService = userSubjectService;
+        this.subjectService = subjectService;
     }
 
     @RequestMapping(value = "/current", method = RequestMethod.POST)
     public RestResponse<UserResponseVM> current() {
         User user = getCurrentUser();
         UserResponseVM userVm = UserResponseVM.from(user);
+        List<UserSubject> userSubjectList = userSubjectService.findByUserId(user.getId());
+        List<Integer> subjectIdList = userSubjectList.stream().map(x->x.getSubjectId()).collect(Collectors.toList());
+        List<Subject> subjectList = subjectService.selectByIds(subjectIdList);
+        userVm.setSubjectName(subjectList.stream().map(x->x.getName()).collect(Collectors.joining("、")));
         userVm.setBirthDay(DateTimeUtil.dateShortFormat(user.getBirthDay()));
         return RestResponse.ok(userVm);
     }

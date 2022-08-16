@@ -135,6 +135,20 @@ public class UserServiceImpl extends BaseServiceImpl<User> implements UserServic
     @Transactional(rollbackFor = Exception.class)
     public void insertUsers(List<User> users) {
         userMapper.insertUsers(users);
+        List<UserSubject> userSubjects = new ArrayList<>();
+        UserSubject userSubject;
+        for (User user : users) {
+            if (!CollectionUtils.isEmpty(user.getSubjectList())){
+                for (Subject subject : user.getSubjectList()) {
+                    userSubject = new UserSubject();
+                    userSubject.setUserId(user.getId());
+                    userSubject.setSubjectId(subject.getId());
+                    userSubject.setLevelId(subject.getLevel());
+                    userSubjects.add(userSubject);
+                }
+            }
+        }
+        userSubjectService.insertBatch(userSubjects);
     }
 
     @Override

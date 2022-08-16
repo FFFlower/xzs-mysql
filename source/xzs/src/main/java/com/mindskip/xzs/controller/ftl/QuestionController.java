@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @RestController("IndexQuestionController")
@@ -29,6 +32,8 @@ public class QuestionController extends BaseApiController {
 
     @RequestMapping(value = "/page", method = RequestMethod.POST)
     public RestResponse<EsPage> page(@RequestBody QuestionPageRequestEsVM model) {
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        System.out.println(request.getSession().getMaxInactiveInterval());
         EsPage pageInfo = questionService.pageForEs(model);
         return RestResponse.ok(pageInfo);
     }

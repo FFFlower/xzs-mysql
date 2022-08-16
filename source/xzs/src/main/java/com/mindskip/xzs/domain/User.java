@@ -2,6 +2,7 @@ package com.mindskip.xzs.domain;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class User implements Serializable {
 
@@ -69,6 +70,8 @@ public class User implements Serializable {
      * 微信openId
      */
     private String wxOpenId;
+
+    private List<Subject> subjectList;
 
     public Integer getId() {
         return id;
@@ -212,5 +215,13 @@ public class User implements Serializable {
 
     public void setWxOpenId(String wxOpenId) {
         this.wxOpenId = wxOpenId == null ? null : wxOpenId.trim();
+    }
+
+    public List<Subject> getSubjectList() {
+        return subjectList;
+    }
+
+    public void setSubjectList(List<Subject> subjectList) {
+        this.subjectList = subjectList;
     }
 }

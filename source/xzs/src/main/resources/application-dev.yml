@@ -10,9 +10,9 @@ spring:
   redis:
     #数据库索引
     database: ${REDIS_DB:1}
-    host: ${REDIS_HOST:127.0.0.1}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PWD:}
+    host: ${REDIS_HOST:59.203.218.244}
+    port: ${REDIS_PORT:7655}
+    password: ${REDIS_PWD:zfsoft666!$}
     #连接超时时间
     timeout: 5000
 
@@ -31,7 +31,7 @@ file:
   maxSize: 100
   avatarMaxSize: 5
 elasticsearch:
-  ip: 127.0.0.1
+  ip: 59.203.218.249
   port: 9300
   pool: 5
   cluster:

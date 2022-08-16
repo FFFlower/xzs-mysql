@@ -3,10 +3,13 @@ package com.mindskip.xzs.controller.wx.student;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.controller.wx.BaseWXApiController;
 import com.mindskip.xzs.domain.ExamPaper;
+import com.mindskip.xzs.domain.ExamPaperUser;
 import com.mindskip.xzs.domain.Subject;
+import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.enums.ExamPaperMethodEnum;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.service.ExamPaperService;
+import com.mindskip.xzs.service.ExamPaperUserService;
 import com.mindskip.xzs.service.SubjectService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Controller("WXStudentExamController")
@@ -30,11 +35,13 @@ public class ExamPaperController extends BaseWXApiController {
 
     private final ExamPaperService examPaperService;
     private final SubjectService subjectService;
+    private final ExamPaperUserService examPaperUserService;
 
     @Autowired
-    public ExamPaperController(ExamPaperService examPaperService, SubjectService subjectService) {
+    public ExamPaperController(ExamPaperService examPaperService, SubjectService subjectService, ExamPaperUserService examPaperUserService) {
         this.examPaperService = examPaperService;
         this.subjectService = subjectService;
+        this.examPaperUserService = examPaperUserService;
     }
 
 
@@ -47,7 +54,15 @@ public class ExamPaperController extends BaseWXApiController {
 
     @RequestMapping(value = "/pageList", method = RequestMethod.POST)
     public RestResponse<PageInfo<ExamPaperPageResponseVM>> pageList(@RequestBody ExamPaperPageVM model) {
+        User user = getCurrentUser();
         model.setLevelId(getCurrentUser().getUserLevel());
+        if (ExamPaperTypeEnum.IntelligenceTrain.getCode() == model.getPaperType()) {
+            model.setUserId(user.getId());
+        } else {
+            List<ExamPaperUser> examPaperUserList = examPaperUserService.findByUserId(user.getId());
+            List<Integer> examPaperIds = examPaperUserList.stream().map(x->x.getExamPaperId()).collect(Collectors.toList());
+            model.setExamPaperIds(examPaperIds);
+        }
         PageInfo<ExamPaper> pageInfo = examPaperService.studentPage(model);
         PageInfo<ExamPaperPageResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
             ExamPaperPageResponseVM vm = modelMapper.map(e, ExamPaperPageResponseVM.class);

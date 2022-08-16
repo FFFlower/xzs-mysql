@@ -14,10 +14,11 @@
     <result column="status" jdbcType="INTEGER" property="status" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="deleted" jdbcType="BIT" property="deleted" />
+    <result column="question_no" jdbcType="INTEGER" property="questionNo" />
   </resultMap>
   <sql id="Base_Column_List">
     id, question_type, subject_id, score, grade_level, difficult, correct, info_text_content_id,
-    create_user, status, create_time, deleted
+    create_user, status, create_time, deleted, question_no
   </sql>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select
@@ -294,6 +295,15 @@
       <if test="currentIdEnd != null ">
         and id <![CDATA[ <= ]]> #{currentIdEnd}
       </if>
+    </where>
+  </select>
+
+  <select id="selectMaxNo" resultType="java.lang.Integer">
+    SELECT
+    max(*)
+    FROM t_question
+    <where>
+      and deleted=0
     </where>
   </select>
 

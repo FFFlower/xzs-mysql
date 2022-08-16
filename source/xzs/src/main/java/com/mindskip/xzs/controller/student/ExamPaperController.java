@@ -3,11 +3,14 @@ package com.mindskip.xzs.controller.student;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.ExamPaper;
+import com.mindskip.xzs.domain.ExamPaperUser;
 import com.mindskip.xzs.domain.Subject;
+import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.enums.ExamPaperMethodEnum;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.service.ExamPaperAnswerService;
 import com.mindskip.xzs.service.ExamPaperService;
+import com.mindskip.xzs.service.ExamPaperUserService;
 import com.mindskip.xzs.service.SubjectService;
 import com.mindskip.xzs.utility.DateTimeUtil;
 import com.mindskip.xzs.utility.PageInfoHelper;
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController("StudentExamPaperController")
 @RequestMapping(value = "/api/student/exam/paper")
@@ -32,12 +37,15 @@ public class ExamPaperController extends BaseApiController {
     private final ApplicationEventPublisher eventPublisher;
     private final SubjectService subjectService;
 
+    private final ExamPaperUserService examPaperUserService;
+
     @Autowired
-    public ExamPaperController(ExamPaperService examPaperService, ExamPaperAnswerService examPaperAnswerService, ApplicationEventPublisher eventPublisher, SubjectService subjectService) {
+    public ExamPaperController(ExamPaperService examPaperService, ExamPaperAnswerService examPaperAnswerService, ApplicationEventPublisher eventPublisher, SubjectService subjectService, ExamPaperUserService examPaperUserService) {
         this.examPaperService = examPaperService;
         this.examPaperAnswerService = examPaperAnswerService;
         this.eventPublisher = eventPublisher;
         this.subjectService = subjectService;
+        this.examPaperUserService = examPaperUserService;
     }
 
 
@@ -50,9 +58,13 @@ public class ExamPaperController extends BaseApiController {
 
     @RequestMapping(value = "/pageList", method = RequestMethod.POST)
     public RestResponse<PageInfo<ExamPaperPageResponseVM>> pageList(@RequestBody @Valid ExamPaperPageVM model) {
-        model.setLevelId(getCurrentUser().getUserLevel());
-        if (ExamPaperTypeEnum.IntelligenceTrain.equals(model.getPaperType())) {
-            model.setUserId(getCurrentUser().getId());
+        User user = getCurrentUser();
+        if (ExamPaperTypeEnum.IntelligenceTrain.getCode() == model.getPaperType()) {
+            model.setUserId(user.getId());
+        } else {
+            List<ExamPaperUser> examPaperUserList = examPaperUserService.findByUserId(user.getId());
+            List<Integer> examPaperIds = examPaperUserList.stream().map(x->x.getExamPaperId()).collect(Collectors.toList());
+            model.setExamPaperIds(examPaperIds);
         }
         PageInfo<ExamPaper> pageInfo = examPaperService.studentPage(model);
         PageInfo<ExamPaperPageResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {

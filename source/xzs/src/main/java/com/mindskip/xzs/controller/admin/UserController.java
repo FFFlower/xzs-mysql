@@ -6,12 +6,14 @@ import com.google.common.collect.Lists;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.configuration.property.FileProperties;
+import com.mindskip.xzs.domain.Subject;
 import com.mindskip.xzs.domain.UserSubject;
 import com.mindskip.xzs.domain.other.KeyValue;
 import com.mindskip.xzs.domain.User;
 import com.mindskip.xzs.domain.UserEventLog;
 import com.mindskip.xzs.domain.enums.UserStatusEnum;
 import com.mindskip.xzs.exception.BadRequestException;
+import com.mindskip.xzs.repository.SubjectMapper;
 import com.mindskip.xzs.repository.UserSubjectMapper;
 import com.mindskip.xzs.service.AuthenticationService;
 import com.mindskip.xzs.service.UserEventLogService;
@@ -47,13 +49,16 @@ public class UserController extends BaseApiController {
     private final FileProperties properties;
     private final UserSubjectMapper userSubjectMapper;
 
+    private final SubjectMapper subjectMapper;
+
     @Autowired
-    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService, FileProperties properties, UserSubjectMapper userSubjectMapper) {
+    public UserController(UserService userService, UserEventLogService userEventLogService, AuthenticationService authenticationService, FileProperties properties, UserSubjectMapper userSubjectMapper, SubjectMapper subjectMapper) {
         this.userService = userService;
         this.userEventLogService = userEventLogService;
         this.authenticationService = authenticationService;
         this.properties = properties;
         this.userSubjectMapper = userSubjectMapper;
+        this.subjectMapper = subjectMapper;
     }
 
 
@@ -248,6 +253,12 @@ public class UserController extends BaseApiController {
             user.setPassword(stringObjectMap.get("密码").toString());
             user.setRealName(stringObjectMap.get("姓名").toString());
             user.setPhone(stringObjectMap.get("手机号").toString());
+            String projectNames = (null == stringObjectMap.get("准操项目")) ? null : stringObjectMap.get("准操项目").toString();
+            if (!StringUtils.isEmpty(projectNames)) {
+                String[] projectNameArr = projectNames.split(",");
+                List<Subject> subjectList = Arrays.stream(projectNameArr).distinct().map(x->subjectMapper.getSubjectByName(x)).collect(Collectors.toList());
+                user.setSubjectList(subjectList);
+            }
             user.setRole(1);
             String encodePwd = authenticationService.pwdEncode(user.getPassword());
             user.setPassword(encodePwd);

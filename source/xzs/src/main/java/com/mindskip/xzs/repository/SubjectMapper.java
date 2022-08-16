@@ -27,4 +27,6 @@ public interface SubjectMapper  extends BaseMapper<Subject> {
     List<Subject> list();
 
     List<Subject> page(SubjectPageRequestVM requestVM);
+
+    Subject getSubjectByName(String name);
 }

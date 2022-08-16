@@ -40,6 +40,10 @@ public class QuestionEditRequestVM {
 
     private String questionTypeName;
 
+    private Integer sort;
+
+    private Integer questionNo;
+
     public Integer getId() {
         return id;
     }
@@ -150,5 +154,21 @@ public class QuestionEditRequestVM {
 
     public void setQuestionTypeName(String questionTypeName) {
         this.questionTypeName = questionTypeName;
+    }
+
+    public Integer getSort() {
+        return sort;
+    }
+
+    public void setSort(Integer sort) {
+        this.sort = sort;
+    }
+
+    public Integer getQuestionNo() {
+        return questionNo;
+    }
+
+    public void setQuestionNo(Integer questionNo) {
+        this.questionNo = questionNo;
     }
 }

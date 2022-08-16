@@ -127,6 +127,12 @@
     order by item_order
   </select>
 
+  <select id="getSubjectByName" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List"/>
+    from t_subject where name= #{name} and deleted = 0
+  </select>
+
 
   <select id="allSubject" resultMap="BaseResultMap">
     select

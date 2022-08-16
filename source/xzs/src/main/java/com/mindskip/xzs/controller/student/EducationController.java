@@ -5,7 +5,9 @@ import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.Subject;
 import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.domain.UserSubject;
 import com.mindskip.xzs.service.SubjectService;
+import com.mindskip.xzs.service.UserSubjectService;
 import com.mindskip.xzs.viewmodel.student.education.SubjectEditRequestVM;
 import com.mindskip.xzs.viewmodel.student.education.SubjectVM;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +22,12 @@ public class EducationController extends BaseApiController {
 
     private final SubjectService subjectService;
 
+    private final UserSubjectService userSubjectService;
+
     @Autowired
-    public EducationController(SubjectService subjectService) {
+    public EducationController(SubjectService subjectService,UserSubjectService userSubjectService) {
         this.subjectService = subjectService;
+        this.userSubjectService = userSubjectService;
     }
 
     @RequestMapping(value = "/subject/list", method = RequestMethod.POST)
@@ -40,6 +45,15 @@ public class EducationController extends BaseApiController {
     @RequestMapping(value = "/subject/all-list", method = RequestMethod.POST)
     public RestResponse<List<Subject>> allList() {
         List<Subject> subjects = subjectService.list();
+        return RestResponse.ok(subjects);
+    }
+
+    @RequestMapping(value = "/subject/listByUser", method = RequestMethod.POST)
+    public RestResponse<List<Subject>> listByUser() {
+        User user = getCurrentUser();
+        List<UserSubject> userSubjects = userSubjectService.findByUserId(user.getId());
+        List<Integer> subjectIds = userSubjects.stream().map(x->x.getSubjectId()).collect(Collectors.toList());
+        List<Subject> subjects = subjectService.selectByIds(subjectIds);
         return RestResponse.ok(subjects);
     }
 

@@ -58,6 +58,8 @@ public class Question implements Serializable {
      */
     private Integer status;
 
+    private Integer questionNo;
+
     /**
      * 创建时间
      */
@@ -161,6 +163,13 @@ public class Question implements Serializable {
         this.deleted = deleted;
     }
 
+    public Integer getQuestionNo() {
+        return questionNo;
+    }
+
+    public void setQuestionNo(Integer questionNo) {
+        this.questionNo = questionNo;
+    }
 
     public void setCorrectFromVM(String correct, List<String> correctArray) {
         int qType = this.getQuestionType();

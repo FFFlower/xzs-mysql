@@ -3,6 +3,7 @@ package com.mindskip.xzs.viewmodel.student.exam;
 import com.mindskip.xzs.base.BasePage;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 public class ExamPaperPageVM extends BasePage {
     @NotNull
@@ -10,6 +11,8 @@ public class ExamPaperPageVM extends BasePage {
     private Integer subjectId;
     private Integer levelId;
     private Integer userId;
+
+    private List<Integer> examPaperIds;
 
     private String name;
 
@@ -51,5 +54,13 @@ public class ExamPaperPageVM extends BasePage {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Integer> getExamPaperIds() {
+        return examPaperIds;
+    }
+
+    public void setExamPaperIds(List<Integer> examPaperIds) {
+        this.examPaperIds = examPaperIds;
     }
 }

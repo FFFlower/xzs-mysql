@@ -32,24 +32,31 @@ public class DashboardController extends BaseWXApiController {
     private final TaskExamService taskExamService;
     private final TaskExamCustomerAnswerService taskExamCustomerAnswerService;
     private final SubjectService subjectService;
+    private final UserSubjectService userSubjectService;
+    private final ExamPaperUserService examPaperUserService;
 
     @Autowired
-    public DashboardController(ExamPaperService examPaperService, TextContentService textContentService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService, SubjectService subjectService) {
+    public DashboardController(ExamPaperService examPaperService, TextContentService textContentService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService, SubjectService subjectService, UserSubjectService userSubjectService, ExamPaperUserService examPaperUserService) {
         this.examPaperService = examPaperService;
         this.textContentService = textContentService;
         this.taskExamService = taskExamService;
         this.taskExamCustomerAnswerService = taskExamCustomerAnswerService;
         this.subjectService = subjectService;
+        this.userSubjectService = userSubjectService;
+        this.examPaperUserService = examPaperUserService;
     }
 
     @RequestMapping(value = "/index", method = RequestMethod.POST)
     public RestResponse<IndexVM> index() {
         IndexVM indexVM = new IndexVM();
         User user = getCurrentUser();
+        List<ExamPaperUser> examPaperUserList = examPaperUserService.findByUserId(user.getId());
+        List<Integer> examPaperIds = examPaperUserList.stream().map(x->x.getExamPaperId()).collect(Collectors.toList());
 
         PaperFilter fixedPaperFilter = new PaperFilter();
         fixedPaperFilter.setGradeLevel(user.getUserLevel());
         fixedPaperFilter.setExamPaperType(ExamPaperTypeEnum.Fixed.getCode());
+        fixedPaperFilter.setExamPaperIds(examPaperIds);
         indexVM.setFixedPaper(examPaperService.indexPaper(fixedPaperFilter));
 
         PaperFilter timeLimitPaperFilter = new PaperFilter();
@@ -124,6 +131,15 @@ public class DashboardController extends BaseWXApiController {
     @RequestMapping(value = "/subject/all-list", method = RequestMethod.POST)
     public RestResponse<List<Subject>> allList() {
         List<Subject> subjects = subjectService.list();
+        return RestResponse.ok(subjects);
+    }
+
+    @RequestMapping(value = "/subject/listByUser", method = RequestMethod.POST)
+    public RestResponse<List<Subject>> listByUser() {
+        User user = getCurrentUser();
+        List<UserSubject> userSubjects = userSubjectService.findByUserId(user.getId());
+        List<Integer> subjectIds = userSubjects.stream().map(x->x.getSubjectId()).collect(Collectors.toList());
+        List<Subject> subjects = subjectService.selectByIds(subjectIds);
         return RestResponse.ok(subjects);
     }
 

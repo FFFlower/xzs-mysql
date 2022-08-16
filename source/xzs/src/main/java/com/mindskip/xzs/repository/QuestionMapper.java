@@ -41,4 +41,6 @@ public interface QuestionMapper extends BaseMapper<Question> {
     List<Question> selectByCondition(QuestionListRequestVM requestVM);
 
     int delBySubjectId(Integer subjectId);
+
+    Integer selectMaxNo();
 }

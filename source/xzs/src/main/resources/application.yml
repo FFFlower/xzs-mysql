@@ -8,13 +8,14 @@ server:
   compression:
     enabled: true
     min-response-size: 1
+  servlet:
+    session:
+      timeout: 21600
 
-#logging logback
 logging:
   config: classpath:logback-spring.xml
   file: xzs
 
-#mybatis
 mybatis:
   mapper-locations: classpath:/mapper/*.xml
   configuration:
@@ -33,7 +34,7 @@ system:
   wx:
     appid: wxedb03ec642f31709
     secret: 31f0e728905c3f57d445148d104df5e8
-    token-to-live: 12h   #token 过期时间
+    token-to-live: 12h
     security-ignore-urls:
       - /api/wx/student/auth/bind
       - /api/wx/student/auth/checkBind
@@ -46,23 +47,20 @@ system:
     secret-key: mSltk9_9KtCdFetCmxvvCAgsBg8JZHiXMuQeqSJA
 
 
-#mybatis page helper
 pagehelper:
   autoDialect: true
   closeConn: true
   reasonable: true
 
 
-#mybatis datasource default HikariPool
 spring:
   datasource:
     hikari:
-      idle-timeout: 600000  #10 min
-      max-lifetime: 1800000 #30 min
+      idle-timeout: 600000
+      max-lifetime: 1800000
   cache:
     type: simple
 
-  #runningtime environment
   profiles:
     active:  dev
 

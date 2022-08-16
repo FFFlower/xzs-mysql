@@ -40,6 +40,8 @@ public class UserResponseVM extends BaseVM {
 
     private String imagePath;
 
+    private String subjectName;
+
     public static UserResponseVM from(User user) {
         UserResponseVM vm = modelMapper.map(user, UserResponseVM.class);
         vm.setBirthDay(DateTimeUtil.dateFormat(user.getBirthDay()));
@@ -167,5 +169,13 @@ public class UserResponseVM extends BaseVM {
 
     public void setImagePath(String imagePath) {
         this.imagePath = imagePath;
+    }
+
+    public String getSubjectName() {
+        return subjectName;
+    }
+
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
     }
 }

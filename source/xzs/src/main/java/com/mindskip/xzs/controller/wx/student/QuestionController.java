@@ -35,6 +35,11 @@ public class QuestionController extends BaseWXApiController {
     public RestResponse<PageInfo<QuestionEditRequestVM>> page(@RequestBody QuestionPageRequestVM model) {
         PageInfo<Question> pageInfo = questionService.page(model);
         PageInfo<QuestionEditRequestVM> page = PageInfoHelper.copyMap(pageInfo, q -> questionService.getQuestionEditRequestVM(q));
+        int curRow = page.getStartRow();
+        for (QuestionEditRequestVM questionEditRequestVM : page.getList()) {
+            questionEditRequestVM.setSort(curRow);
+            curRow ++;
+        }
         return RestResponse.ok(page);
     }
 

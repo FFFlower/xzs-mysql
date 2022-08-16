@@ -1,5 +1,6 @@
 package com.mindskip.xzs.controller.admin;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
 import com.mindskip.xzs.domain.ExamPaper;
@@ -50,7 +51,7 @@ public class ExamPaperController extends BaseApiController {
         PageInfo<ExamResponseVM> page = PageInfoHelper.copyMap(pageInfo, e -> {
             ExamResponseVM vm = modelMapper.map(e, ExamResponseVM.class);
             vm.setCreateTime(DateTimeUtil.dateFormat(e.getCreateTime()));
-            vm.setStudents(examPaperUserList.stream().filter(x->x.getExamPaperId() == e.getId()).map(x->userResponseMap.get(x.getUserId())).collect(Collectors.toList()));
+            vm.setStudents(examPaperUserList.stream().filter(x->x.getExamPaperId().intValue() == e.getId().intValue()).map(x->userResponseMap.get(x.getUserId())).collect(Collectors.toList()));
             return vm;
         });
         return RestResponse.ok(page);

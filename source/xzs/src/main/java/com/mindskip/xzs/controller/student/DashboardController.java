@@ -2,10 +2,7 @@ package com.mindskip.xzs.controller.student;
 
 import com.mindskip.xzs.base.BaseApiController;
 import com.mindskip.xzs.base.RestResponse;
-import com.mindskip.xzs.domain.TaskExam;
-import com.mindskip.xzs.domain.TaskExamCustomerAnswer;
-import com.mindskip.xzs.domain.TextContent;
-import com.mindskip.xzs.domain.User;
+import com.mindskip.xzs.domain.*;
 import com.mindskip.xzs.domain.enums.ExamPaperTypeEnum;
 import com.mindskip.xzs.domain.task.TaskItemAnswerObject;
 import com.mindskip.xzs.domain.task.TaskItemObject;
@@ -35,24 +32,29 @@ public class DashboardController extends BaseApiController {
     private final TaskExamCustomerAnswerService taskExamCustomerAnswerService;
     private final TextContentService textContentService;
 
+    private final ExamPaperUserService examPaperUserService;
+
     @Autowired
-    public DashboardController(UserService userService, ExamPaperService examPaperService, QuestionService questionService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService, TextContentService textContentService) {
+    public DashboardController(UserService userService, ExamPaperService examPaperService, QuestionService questionService, TaskExamService taskExamService, TaskExamCustomerAnswerService taskExamCustomerAnswerService, TextContentService textContentService, ExamPaperUserService examPaperUserService) {
         this.userService = userService;
         this.examPaperService = examPaperService;
         this.questionService = questionService;
         this.taskExamService = taskExamService;
         this.taskExamCustomerAnswerService = taskExamCustomerAnswerService;
         this.textContentService = textContentService;
+        this.examPaperUserService = examPaperUserService;
     }
 
     @RequestMapping(value = "/index", method = RequestMethod.POST)
     public RestResponse<IndexVM> index() {
         IndexVM indexVM = new IndexVM();
         User user = getCurrentUser();
-
+        List<ExamPaperUser> examPaperUserList = examPaperUserService.findByUserId(user.getId());
+        List<Integer> examPaperIds = examPaperUserList.stream().map(x->x.getExamPaperId()).collect(Collectors.toList());
         PaperFilter fixedPaperFilter = new PaperFilter();
         fixedPaperFilter.setGradeLevel(user.getUserLevel());
         fixedPaperFilter.setExamPaperType(ExamPaperTypeEnum.Fixed.getCode());
+        fixedPaperFilter.setExamPaperIds(examPaperIds);
         indexVM.setFixedPaper(examPaperService.indexPaper(fixedPaperFilter));
 
         PaperFilter timeLimitPaperFilter = new PaperFilter();

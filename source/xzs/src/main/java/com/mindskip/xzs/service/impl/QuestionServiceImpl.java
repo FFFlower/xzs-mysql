@@ -63,14 +63,14 @@ public class QuestionServiceImpl extends BaseServiceImpl<Question> implements Qu
 
     @Override
     public PageInfo<Question> page(QuestionPageRequestVM requestVM) {
-        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), StringUtils.isEmpty(requestVM.getOrderBy()) ? "id desc" : requestVM.orderBy()).doSelectPageInfo(() ->
+        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), StringUtils.isEmpty(requestVM.getOrderBy()) ? "id asc" : requestVM.orderBy()).doSelectPageInfo(() ->
                 questionMapper.page(requestVM)
         );
     }
 
     @Override
     public PageInfo<Question> pageByContent(QuestionPageRequestVM requestVM) {
-        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), StringUtils.isEmpty(requestVM.getOrderBy()) ? "id desc" : requestVM.orderBy()).doSelectPageInfo(() ->
+        return PageHelper.startPage(requestVM.getPageIndex(), requestVM.getPageSize(), StringUtils.isEmpty(requestVM.getOrderBy()) ? "id asc" : requestVM.orderBy()).doSelectPageInfo(() ->
                 questionMapper.pageByContent(requestVM)
         );
     }
@@ -88,6 +88,12 @@ public class QuestionServiceImpl extends BaseServiceImpl<Question> implements Qu
         setQuestionInfoFromVM(infoTextContent, model);
         textContentService.insertByFilter(infoTextContent);
 
+        Integer maxNo = questionMapper.selectMaxNo();
+        Integer questionNo = 1;
+        if (null != maxNo) {
+            questionNo = maxNo + 1;
+        }
+
         Question question = new Question();
         question.setSubjectId(model.getSubjectId());
         question.setGradeLevel(gradeLevel);
@@ -100,6 +106,7 @@ public class QuestionServiceImpl extends BaseServiceImpl<Question> implements Qu
         question.setInfoTextContentId(infoTextContent.getId());
         question.setCreateUser(userId);
         question.setDeleted(false);
+        question.setQuestionNo(questionNo);
         questionMapper.insertSelective(question);
         model.setId(question.getId());
         return question;
