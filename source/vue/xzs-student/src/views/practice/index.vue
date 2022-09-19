@@ -4,14 +4,10 @@
       <el-tab-pane :label="item.name"  :key="item.id" :name="item.id" v-for="item in subjectList" style="margin-left: 20px;" >
         <el-row>
           <el-col :span="16">
-            <el-row  style="float: right">
-              <el-radio-group v-model="queryParam.paperType" size="mini" @change="paperTypeChange" >
-                <el-radio v-for="item in paperTypeEnum" size="mini" :key="item.key" :label="item.key">{{item.value}}</el-radio>
-              </el-radio-group>
-            </el-row>
             <el-table v-loading="listLoading" :data="tableData" fit highlight-current-row style="width: 100%">
               <el-table-column prop="id" label="序号" width="90px"/>
               <el-table-column prop="name" label="名称"  />
+              <el-table-column prop="createTime" label="创建时间"  />
               <el-table-column align="right">
                 <template slot-scope="{row}">
                   <router-link target="_blank" :to="{path:'/do',query:{id:row.id}}">
@@ -54,6 +50,7 @@
                 </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="generateIntelligenceTrain">生成试卷</el-button>
+                  <el-button type="primary" @click="questionBankPractice">题库练习</el-button>
                 </el-form-item>
               </el-form>
             </el-card>
@@ -76,7 +73,7 @@ export default {
   data () {
     return {
       queryParam: {
-        paperType: 1,
+        paperType: 8,
         subjectId: 0,
         pageIndex: 1,
         pageSize: 10
@@ -86,8 +83,8 @@ export default {
         subjectId: null,
         setMethod: 2,
         questionNum: 100,
-        singleChoiceNum: 80,
-        judgeNum: 20
+        singleChoiceNum: 30,
+        judgeNum: 70
       },
       rules: {
         level: [
@@ -110,13 +107,12 @@ export default {
     }
   },
   created () {
-    this.queryParam.paperType = this.$route.query.paperType ? parseInt(this.$route.query.paperType) : 1
     this.initSubject()
   },
   methods: {
     initSubject () {
       let _this = this
-      subjectApi.allList().then(re => {
+      subjectApi.listByUser().then(re => {
         _this.subjects = re.response
         _this.subjectList = re.response.map(i => { return { id: i.id.toString(), name: i.name } })
         let subjectId = _this.subjectList[0].id
@@ -151,6 +147,17 @@ export default {
           }).catch(e => {
             this.formLoading = false
           })
+        } else {
+          return false
+        }
+      })
+    },
+    questionBankPractice () {
+      let _this = this
+      this.$refs.form[0].validate((valid) => {
+        if (valid) {
+          _this.practiceDialogVisible = false
+          _this.$router.push({ path: '/practice/bank/index', query: { levelId: _this.form.level, subjectId: _this.form.subjectId } })
         } else {
           return false
         }

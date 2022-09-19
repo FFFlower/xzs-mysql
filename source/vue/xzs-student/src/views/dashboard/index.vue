@@ -126,7 +126,7 @@ export default {
     }).catch(e => {
       console.log(e)
     })
-    this.initSubject()
+    this.initSubjectByUser()
     this.taskLoading = true
     indexApi.task().then(re => {
       _this.taskList = re.response
@@ -164,9 +164,9 @@ export default {
       })
     },
     intelligenceTrain () {
-      this.$router.push({ path: '/paper/index?paperType=8', query: { } })
+      this.$router.push({ path: '/practice/index', query: { } })
     },
-    ...mapActions('exam', { initSubject: 'initSubject' })
+    ...mapActions('exam', { initSubjectByUser: 'initSubjectByUser' })
   },
   computed: {
     ...mapGetters('enumItem', [

@@ -35,6 +35,18 @@ const router = new Router({
       ]
     },
     {
+      path: '/practice',
+      component: Layout,
+      children: [
+        {
+          path: 'index',
+          component: () => import('@/views/practice/index'),
+          name: 'PaperIndex',
+          meta: { title: '练习中心' }
+        }
+      ]
+    },
+    {
       path: '/paper',
       component: Layout,
       children: [

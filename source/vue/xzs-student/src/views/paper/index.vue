@@ -4,14 +4,10 @@
       <el-tab-pane :label="item.name"  :key="item.id" :name="item.id" v-for="item in subjectList" style="margin-left: 20px;" >
         <el-row>
           <el-col :span="16">
-            <el-row  style="float: right">
-              <el-radio-group v-model="queryParam.paperType" size="mini" @change="paperTypeChange" >
-                <el-radio v-for="item in paperTypeEnum" size="mini" :key="item.key" :label="item.key">{{item.value}}</el-radio>
-              </el-radio-group>
-            </el-row>
             <el-table v-loading="listLoading" :data="tableData" fit highlight-current-row style="width: 100%">
               <el-table-column prop="id" label="序号" width="90px"/>
               <el-table-column prop="name" label="名称"  />
+              <el-table-column prop="createTime" label="创建时间"  />
               <el-table-column align="right">
                 <template slot-scope="{row}">
                   <router-link target="_blank" :to="{path:'/do',query:{id:row.id}}">
@@ -23,41 +19,6 @@
             <pagination v-show="total>0" :total="total" :background="false" :page.sync="queryParam.pageIndex" :limit.sync="queryParam.pageSize"
                         @pagination="search" style="margin-top: 20px"/>
           </el-col>
-          <el-col :span="7" :offset="1">
-            <el-card class="box-card" v-if="queryParam.paperType === 8" :v-loading="formLoading">
-              <el-form ref="form" :rules="rules" :model="form" label-width="80px" style="margin-top: 20px;">
-                <el-form-item label="作业类别" prop="level">
-                  <el-select v-model="form.level" placeholder="作业类别" @change="autoGenerateLevelChange">
-                    <el-option v-for="item in jobCategoryEnum" :key="item.key" :value="item.key" :label="item.value"></el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="准操项目" prop="subjectId">
-                  <el-select v-model="form.subjectId" placeholder="准操项目">
-                    <el-option v-for="item in subjectFilter" :key="item.id" :value="item.id" :label="item.name"></el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item label="单选题数">
-                  <div class="block">
-                    <el-slider
-                      v-model="form.singleChoiceNum"
-                      :step="10">
-                    </el-slider>
-                  </div>
-                </el-form-item>
-                <el-form-item label="判断题数">
-                  <div class="block">
-                    <el-slider
-                      v-model="form.judgeNum"
-                      :step="10">
-                    </el-slider>
-                  </div>
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="generateIntelligenceTrain">生成试卷</el-button>
-                </el-form-item>
-              </el-form>
-            </el-card>
-          </el-col>
         </el-row>
       </el-tab-pane>
     </el-tabs>
@@ -66,7 +27,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import Pagination from '@/components/Pagination'
 import examPaperApi from '@/api/examPaper'
 import subjectApi from '@/api/subject'
@@ -110,13 +71,12 @@ export default {
     }
   },
   created () {
-    this.queryParam.paperType = this.$route.query.paperType ? parseInt(this.$route.query.paperType) : 1
     this.initSubject()
   },
   methods: {
     initSubject () {
       let _this = this
-      subjectApi.allList().then(re => {
+      subjectApi.listByUser().then(re => {
         _this.subjects = re.response
         _this.subjectList = re.response.map(i => { return { id: i.id.toString(), name: i.name } })
         let subjectId = _this.subjectList[0].id

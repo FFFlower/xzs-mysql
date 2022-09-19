@@ -1,7 +1,7 @@
 <template>
   <div style="line-height:1.8">
     <div v-if="qType==1" v-loading="qLoading">
-      <div class="q-title">{{question.title}}
+      <div class="q-title">{{serial}}、{{question.title}}
         <el-tag type="success" v-if="showResult && doRight">正确</el-tag>
         <el-tag type="danger" v-if="showResult && !doRight">错误</el-tag>
       </div>
@@ -17,6 +17,7 @@
       </div>
     </div>
     <div v-else-if="qType==2" v-loading="qLoading">
+      <div>{{serial}}、</div>
       <div class="q-title" v-html="question.title"/>
       <div class="q-content">
         <el-checkbox-group v-model="answer.contentArray" @change="answer.completed = true" >
@@ -28,7 +29,7 @@
       </div>
     </div>
     <div v-else-if="qType==3" v-loading="qLoading">
-      <div class="q-title">{{question.title}}
+      <div class="q-title">{{serial}}、{{question.title}}
         <el-tag type="success" v-if="showResult && doRight">正确</el-tag>
         <el-tag type="danger" v-if="showResult && !doRight">错误</el-tag>
       </div>
@@ -43,6 +44,7 @@
 <!--      <span style="padding-left: 10px;">)</span>-->
     </div>
     <div v-else-if="qType==4" v-loading="qLoading">
+      <div>{{serial}}、</div>
       <div class="q-title" v-html="question.title"/>
       <div>
         <el-form-item :label="item.prefix" :key="item.prefix"  v-for="item in question.items"  label-width="50px" style="margin-top: 10px;margin-bottom: 10px;">
@@ -83,6 +85,10 @@ export default {
       default: false
     },
     qType: {
+      type: Number,
+      default: 0
+    },
+    serial: {
       type: Number,
       default: 0
     },

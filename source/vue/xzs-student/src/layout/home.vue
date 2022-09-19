@@ -9,6 +9,7 @@
       </div>
       <el-menu class="el-menu-title" mode="horizontal" :default-active="defaultUrl" :router="true">
         <el-menu-item index="/index">首页</el-menu-item>
+        <el-menu-item index="/practice/index">练习中心</el-menu-item>
         <el-menu-item index="/paper/index">试卷中心</el-menu-item>
         <el-menu-item index="/record/index">考试记录</el-menu-item>
         <el-menu-item index="/question/index">错题本</el-menu-item>
@@ -176,5 +177,10 @@ export default {
   font-size: 14px;
   color: #606266;
   font-family: 'Rubik', sans-serif;
+}
+.el-submenu .el-submenu__title{
+  font-size: 15px !important;
+  line-height: 62px !important;
+  color: #252b3a;
 }
 </style>

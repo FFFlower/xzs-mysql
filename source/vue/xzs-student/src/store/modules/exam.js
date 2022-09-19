@@ -31,6 +31,13 @@ const actions = {
     }).catch(e => {
       console.log(e)
     })
+  },
+  initSubjectByUser ({ commit }) {
+    subjectApi.listByUser().then(re => {
+      commit('setSubjects', re.response)
+    }).catch(e => {
+      console.log(e)
+    })
   }
 }
 

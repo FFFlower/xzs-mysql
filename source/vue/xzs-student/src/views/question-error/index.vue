@@ -7,6 +7,11 @@
           <el-table-column prop="questionType" label="题型"  :formatter="questionTypeFormatter" width="70" />
           <el-table-column prop="subjectName" label="学科"  width="50" />
           <el-table-column prop="createTime" label="做题时间"  width="170" />
+          <el-table-column  align="right" width="70">
+            <template slot-scope="{row}">
+              <el-button type="text" size="small" @click="deleteQuestion(row.id)">删除</el-button>
+            </template>
+          </el-table-column>
         </el-table>
         <pagination v-show="total>0" :total="total" :background="false" :page.sync="queryParam.pageIndex" :limit.sync="queryParam.pageSize"
                     @pagination="search" style="margin-top: 20px"/>
@@ -70,6 +75,14 @@ export default {
     itemSelect (row, column, event) {
       // this.qAnswerShow(row.id)
       this.qAnswerShow(row)
+    },
+    deleteQuestion (id) {
+      let _this = this
+      questionAnswerApi.delError(id).then(data => {
+        const re = data
+        _this.$message.success(re.message)
+        this.search()
+      })
     },
     qAnswerShow (row) {
       // let _this = this
